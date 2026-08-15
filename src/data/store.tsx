@@ -1,4 +1,6 @@
-import React, { createContext, useCallback, useContext, useMemo, useReducer } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { createContext, useContext, useEffect, useMemo, useReducer, useState } from 'react';
+import { ActivityIndicator, View } from 'react-native';
 import { today } from './helpers';
 import { EXPENSE_CATS, INCOME_CATS } from './constants';
 import {
@@ -555,9 +557,43 @@ interface StoreValue {
 
 const StoreCtx = createContext<StoreValue | null>(null);
 
+const STORAGE_KEY = 'daftar_state_v1';
+
 export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(reducer, undefined, createInitialState);
+  const [hydrated, setHydrated] = useState(false);
+
+  // Load any previously-saved state once on mount, before the first persist-write below can run.
+  useEffect(() => {
+    AsyncStorage.getItem(STORAGE_KEY)
+      .then((raw) => {
+        if (raw) {
+          try {
+            dispatch({ type: 'IMPORT_STATE', payload: JSON.parse(raw) });
+          } catch {
+            // Corrupted save -- fall back to the default seed state.
+          }
+        }
+      })
+      .finally(() => setHydrated(true));
+  }, []);
+
+  // Persist on every change, once hydration has settled (so we never overwrite a real save with
+  // the transient default state that exists before the read above resolves).
+  useEffect(() => {
+    if (!hydrated) return;
+    AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(state)).catch(() => {});
+  }, [state, hydrated]);
+
   const value = useMemo(() => ({ state, dispatch }), [state]);
+
+  if (!hydrated) {
+    return (
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#f6f5fb' }}>
+        <ActivityIndicator color="#6c5ce7" size="large" />
+      </View>
+    );
+  }
   return <StoreCtx.Provider value={value}>{children}</StoreCtx.Provider>;
 }
 
