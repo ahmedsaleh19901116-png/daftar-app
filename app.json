@@ -27,6 +27,12 @@
         "projectId": "67025232-20d7-4292-8548-a47046f3ac39"
       }
     },
-    "owner": "ahmedsaleh90"
+    "owner": "ahmedsaleh90",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/67025232-20d7-4292-8548-a47046f3ac39"
+    }
   }
 }
