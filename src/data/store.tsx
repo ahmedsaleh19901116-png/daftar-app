@@ -578,11 +578,17 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       .finally(() => setHydrated(true));
   }, []);
 
-  // Persist on every change, once hydration has settled (so we never overwrite a real save with
-  // the transient default state that exists before the read above resolves).
+  // Persist on change, once hydration has settled (so we never overwrite a real save with the
+  // transient default state that exists before the read above resolves). Debounced -- state
+  // changes on every keystroke (e.g. typing in the add-transaction amount field), and
+  // JSON.stringify-ing the whole app state (transactions included) on each one caused visible
+  // jank; writing only after things settle for a moment keeps saves reliable without the cost.
   useEffect(() => {
     if (!hydrated) return;
-    AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(state)).catch(() => {});
+    const t = setTimeout(() => {
+      AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(state)).catch(() => {});
+    }, 500);
+    return () => clearTimeout(t);
   }, [state, hydrated]);
 
   const value = useMemo(() => ({ state, dispatch }), [state]);
