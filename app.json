@@ -21,6 +21,12 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "67025232-20d7-4292-8548-a47046f3ac39"
+      }
+    },
+    "owner": "ahmedsaleh90"
   }
 }
