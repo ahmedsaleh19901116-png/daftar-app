@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(unzip -oq \"/c/Users/ahmed/Downloads/daftar-app.zip\" -d .)",
+      "Bash(npm --version)",
+      "PowerShell(node --version)",
+      "PowerShell(npm --version)",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Program Files\\\\nodejs\",\"C:\\\\Program Files \\(x86\\)\\\\nodejs\",\"$env:LOCALAPPDATA\\\\Programs\",\"$env:APPDATA\\\\npm\" -ErrorAction SilentlyContinue | Select-Object FullName; Get-Command node,npm,nvm -ErrorAction SilentlyContinue; where.exe node 2>$null; where.exe npm 2>$null)",
+      "PowerShell(winget install --id OpenJS.NodeJS.LTS -e --accept-source-agreements --accept-package-agreements)",
+      "PowerShell($env:Path = [System.Environment]::GetEnvironmentVariable\\(\"Path\",\"Machine\"\\) + \";\" + [System.Environment]::GetEnvironmentVariable\\(\"Path\",\"User\"\\); node --version; npm --version)",
+      "PowerShell($env:Path = [System.Environment]::GetEnvironmentVariable\\(\"Path\",\"Machine\"\\) + \";\" + [System.Environment]::GetEnvironmentVariable\\(\"Path\",\"User\"\\); Set-Location \"C:\\\\Users\\\\ahmed\\\\OneDrive\\\\المستندات\\\\untitled\"; npm install)",
+      "PowerShell($env:Path = [System.Environment]::GetEnvironmentVariable\\(\"Path\",\"Machine\"\\) + \";\" + [System.Environment]::GetEnvironmentVariable\\(\"Path\",\"User\"\\); Set-Location \"C:\\\\Users\\\\ahmed\\\\OneDrive\\\\المستندات\\\\untitled\"; npx tsc --noEmit)",
+      "PowerShell(Get-Command emulator -ErrorAction SilentlyContinue; $env:ANDROID_HOME; $env:ANDROID_SDK_ROOT; Test-Path \"$env:LOCALAPPDATA\\\\Android\\\\Sdk\"; Get-ChildItem \"$env:LOCALAPPDATA\\\\Android\\\\Sdk\\\\emulator\" -ErrorAction SilentlyContinue)",
+      "PowerShell($env:Path = [System.Environment]::GetEnvironmentVariable\\(\"Path\",\"Machine\"\\) + \";\" + [System.Environment]::GetEnvironmentVariable\\(\"Path\",\"User\"\\); Set-Location \"C:\\\\Users\\\\ahmed\\\\OneDrive\\\\المستندات\\\\untitled\"; npx expo install react-dom react-native-web)"
+    ]
+  }
+}

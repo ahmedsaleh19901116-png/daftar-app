@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="{{ wrapStyle }}">
+<svg width="{{ glyphSize }}" height="{{ glyphSize }}" viewBox="0 0 20 20" fill="{{ fg }}">
+<sc-if value="{{ isFood }}" hint-placeholder-val="{{ false }}">
+<path d="M4 7a1 1 0 011-1h8a1 1 0 011 1v1a4 4 0 01-4 4H9a4 4 0 01-4-4V7z"></path><rect x="4" y="14" width="10" height="2" rx="1"></rect><rect x="14.5" y="7" width="2.5" height="4" rx="1.2"></rect>
+</sc-if>
+<sc-if value="{{ isTransport }}" hint-placeholder-val="{{ false }}">
+<path d="M3 12l1.5-4.5A2 2 0 016.4 6h7.2a2 2 0 011.9 1.5L17 12v3a1 1 0 01-1 1h-1a1 1 0 01-1-1v-1H6v1a1 1 0 01-1 1H4a1 1 0 01-1-1v-3z"></path><circle cx="6.5" cy="14.5" r="1.4" fill="{{ bg }}"></circle><circle cx="13.5" cy="14.5" r="1.4" fill="{{ bg }}"></circle>
+</sc-if>
+<sc-if value="{{ isBills }}" hint-placeholder-val="{{ false }}">
+<rect x="4" y="2" width="12" height="16" rx="2"></rect><rect x="6.5" y="6" width="7" height="1.6" rx="0.8" fill="{{ bg }}"></rect><rect x="6.5" y="9.2" width="7" height="1.6" rx="0.8" fill="{{ bg }}"></rect><rect x="6.5" y="12.4" width="4" height="1.6" rx="0.8" fill="{{ bg }}"></rect>
+</sc-if>
+<sc-if value="{{ isShopping }}" hint-placeholder-val="{{ false }}">
+<path d="M5 6h10l-1 11a1 1 0 01-1 1H7a1 1 0 01-1-1L5 6z"></path><path d="M7 6V5a3 3 0 016 0v1" stroke="{{ fg }}" stroke-width="1.8" fill="none" stroke-linecap="round"></path>
+</sc-if>
+<sc-if value="{{ isHealth }}" hint-placeholder-val="{{ false }}">
+<circle cx="10" cy="10" r="8"></circle><rect x="8.7" y="5.5" width="2.6" height="9" rx="1" fill="{{ bg }}"></rect><rect x="5.5" y="8.7" width="9" height="2.6" rx="1" fill="{{ bg }}"></rect>
+</sc-if>
+<sc-if value="{{ isSalary }}" hint-placeholder-val="{{ false }}">
+<rect x="2" y="5" width="16" height="10" rx="2"></rect><circle cx="10" cy="10" r="2.4" fill="{{ bg }}"></circle>
+</sc-if>
+<sc-if value="{{ isLaptop }}" hint-placeholder-val="{{ false }}">
+<rect x="3" y="4" width="14" height="9" rx="1.5"></rect><path d="M1.5 15.5h17l-1 1.3a1.5 1.5 0 01-1.2.7H3.7a1.5 1.5 0 01-1.2-.7l-1-1.3z"></path>
+</sc-if>
+<sc-if value="{{ isGift }}" hint-placeholder-val="{{ false }}">
+<rect x="3" y="8" width="14" height="9" rx="1.5"></rect><rect x="2.5" y="6" width="15" height="3" rx="1"></rect><rect x="9" y="6" width="2" height="11"></rect><path d="M6.5 6c-1.4 0-2.5-1-2.5-2s1.1-1.7 2.5-1c1.1.6 2 1.8 3 3z"></path><path d="M13.5 6c1.4 0 2.5-1 2.5-2s-1.1-1.7-2.5-1c-1.1.6-2 1.8-3 3z"></path>
+</sc-if>
+<sc-if value="{{ isTag }}" hint-placeholder-val="{{ true }}">
+<path d="M3 3h6.5a1 1 0 01.7.3l6.5 6.5a1 1 0 010 1.4l-6.5 6.5a1 1 0 01-1.4 0L2.3 11.2a1 1 0 01-.3-.7V4a1 1 0 011-1z"></path><circle cx="6.5" cy="6.5" r="1.3" fill="{{ bg }}"></circle>
+</sc-if>
+</svg>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;icon&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;tag&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;food&quot;,&quot;transport&quot;,&quot;bills&quot;,&quot;shopping&quot;,&quot;health&quot;,&quot;salary&quot;,&quot;laptop&quot;,&quot;gift&quot;,&quot;tag&quot;]},&quot;size&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:18,&quot;tsType&quot;:&quot;number&quot;},&quot;tile&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;}}">
+const PALETTE = {
+  food: { bg: '#ffe8b3', fg: '#b5790a' },
+  transport: { bg: '#cdeafc', fg: '#1f6fb0' },
+  bills: { bg: '#d7f5df', fg: '#1f8a4c' },
+  shopping: { bg: '#ffd9df', fg: '#c23566' },
+  health: { bg: '#ffe0d6', fg: '#d9542a' },
+  salary: { bg: '#e3ddfb', fg: '#5b3fc4' },
+  laptop: { bg: '#d7f0f7', fg: '#157a8a' },
+  gift: { bg: '#f9d9ff', fg: '#a531c2' },
+  tag: { bg: '#ececf2', fg: '#5b5b66' },
+};
+class Component extends DCLogic {
+  renderVals() {
+    const icon = this.props.icon || 'tag';
+    const p = PALETTE[icon] || PALETTE.tag;
+    const size = this.props.size || 18;
+    const tile = this.props.tile ?? true;
+    return {
+      isFood: icon === 'food', isTransport: icon === 'transport', isBills: icon === 'bills',
+      isShopping: icon === 'shopping', isHealth: icon === 'health', isSalary: icon === 'salary',
+      isLaptop: icon === 'laptop', isGift: icon === 'gift', isTag: icon === 'tag' || !PALETTE[icon],
+      bg: p.bg, fg: p.fg,
+      glyphSize: tile ? Math.round(size * 0.58) : size,
+      wrapStyle: tile
+        ? `width:${size}px;height:${size}px;border-radius:${Math.round(size * 0.32)}px;background:${p.bg};display:flex;align-items:center;justify-content:center;flex:none`
+        : 'display:flex',
+    };
+  }
+}
+</script>
+</body>
+</html>

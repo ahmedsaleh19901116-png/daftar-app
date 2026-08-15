@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="{{ wrapStyle }}">
+<svg width="{{ glyphSize }}" height="{{ glyphSize }}" viewBox="0 0 20 20" fill="{{ fg }}">
+<sc-if value="{{ isFood }}" hint-placeholder-val="{{ false }}">
+<path d="M4 7a1 1 0 011-1h8a1 1 0 011 1v1a4 4 0 01-4 4H9a4 4 0 01-4-4V7z"></path><rect x="4" y="14" width="10" height="2" rx="1"></rect><rect x="14.5" y="7" width="2.5" height="4" rx="1.2"></rect>
+</sc-if>
+<sc-if value="{{ isTransport }}" hint-placeholder-val="{{ false }}">
+<path d="M3 12l1.5-4.5A2 2 0 016.4 6h7.2a2 2 0 011.9 1.5L17 12v3a1 1 0 01-1 1h-1a1 1 0 01-1-1v-1H6v1a1 1 0 01-1 1H4a1 1 0 01-1-1v-3z"></path><circle cx="6.5" cy="14.5" r="1.4" fill="{{ bg }}"></circle><circle cx="13.5" cy="14.5" r="1.4" fill="{{ bg }}"></circle>
+</sc-if>
+<sc-if value="{{ isBills }}" hint-placeholder-val="{{ false }}">
+<rect x="4" y="2" width="12" height="16" rx="2"></rect><rect x="6.5" y="6" width="7" height="1.6" rx="0.8" fill="{{ bg }}"></rect><rect x="6.5" y="9.2" width="7" height="1.6" rx="0.8" fill="{{ bg }}"></rect><rect x="6.5" y="12.4" width="4" height="1.6" rx="0.8" fill="{{ bg }}"></rect>
+</sc-if>
+<sc-if value="{{ isShopping }}" hint-placeholder-val="{{ false }}">
+<path d="M5 6h10l-1 11a1 1 0 01-1 1H7a1 1 0 01-1-1L5 6z"></path><path d="M7 6V5a3 3 0 016 0v1" stroke="{{ fg }}" stroke-width="1.8" fill="none" stroke-linecap="round"></path>
+</sc-if>
+<sc-if value="{{ isHealth }}" hint-placeholder-val="{{ false }}">
+<circle cx="10" cy="10" r="8"></circle><rect x="8.7" y="5.5" width="2.6" height="9" rx="1" fill="{{ bg }}"></rect><rect x="5.5" y="8.7" width="9" height="2.6" rx="1" fill="{{ bg }}"></rect>
+</sc-if>
+<sc-if value="{{ isSalary }}" hint-placeholder-val="{{ false }}">
+<rect x="2" y="5" width="16" height="10" rx="2"></rect><circle cx="10" cy="10" r="2.4" fill="{{ bg }}"></circle>
+</sc-if>
+<sc-if value="{{ isLaptop }}" hint-placeholder-val="{{ false }}">
+<rect x="3" y="4" width="14" height="9" rx="1.5"></rect><path d="M1.5 15.5h17l-1 1.3a1.5 1.5 0 01-1.2.7H3.7a1.5 1.5 0 01-1.2-.7l-1-1.3z"></path>
+</sc-if>
+<sc-if value="{{ isGift }}" hint-placeholder-val="{{ false }}">
+<rect x="3" y="8" width="14" height="9" rx="1.5"></rect><rect x="2.5" y="6" width="15" height="3" rx="1"></rect><rect x="9" y="6" width="2" height="11"></rect><path d="M6.5 6c-1.4 0-2.5-1-2.5-2s1.1-1.7 2.5-1c1.1.6 2 1.8 3 3z"></path><path d="M13.5 6c1.4 0 2.5-1 2.5-2s-1.1-1.7-2.5-1c-1.1.6-2 1.8-3 3z"></path>
+</sc-if>
+<sc-if value="{{ isBasket }}" hint-placeholder-val="{{ false }}">
+<path d="M4 8h12l-1.2 8.2a1 1 0 01-1 .8H6.2a1 1 0 01-1-.8L4 8z"></path><path d="M7 8l1-4h4l1 4" fill="none" stroke="{{ fg }}" stroke-width="1.6"></path>
+</sc-if>
+<sc-if value="{{ isHome }}" hint-placeholder-val="{{ false }}">
+<path d="M10 3l7 6v8a1 1 0 01-1 1h-3v-5H7v5H4a1 1 0 01-1-1V9l7-6z"></path>
+</sc-if>
+<sc-if value="{{ isBolt }}" hint-placeholder-val="{{ false }}">
+<path d="M11 2L4 12h5l-1 6 8-10h-5z"></path>
+</sc-if>
+<sc-if value="{{ isWrench }}" hint-placeholder-val="{{ false }}">
+<path d="M12.5 3.5a3.5 3.5 0 00-4.6 4.6L3 13v3a1 1 0 001 1h3l4.9-4.9a3.5 3.5 0 004.6-4.6l-2 2-1.6-.4-.4-1.6 2-2z"></path>
+</sc-if>
+<sc-if value="{{ isPill }}" hint-placeholder-val="{{ false }}">
+<rect x="3" y="8" width="14" height="6" rx="3"></rect><rect x="9.3" y="8" width="1.4" height="6" fill="{{ bg }}"></rect>
+</sc-if>
+<sc-if value="{{ isStar }}" hint-placeholder-val="{{ false }}">
+<path d="M10 2l2.2 5.2 5.6.5-4.3 3.7 1.3 5.5L10 14l-4.8 2.9 1.3-5.5-4.3-3.7 5.6-.5z"></path>
+</sc-if>
+<sc-if value="{{ isCap }}" hint-placeholder-val="{{ false }}">
+<path d="M10 3l8 4-8 4-8-4z"></path><path d="M5 9v4c0 1.5 2.2 2.5 5 2.5s5-1 5-2.5V9" fill="none" stroke="{{ fg }}" stroke-width="1.6"></path>
+</sc-if>
+<sc-if value="{{ isHeart }}" hint-placeholder-val="{{ false }}">
+<path d="M10 17S3 12.5 3 7.8A3.8 3.8 0 0110 5.5 3.8 3.8 0 0117 7.8C17 12.5 10 17 10 17z"></path>
+</sc-if>
+<sc-if value="{{ isController }}" hint-placeholder-val="{{ false }}">
+<rect x="2" y="7" width="16" height="8" rx="4"></rect><rect x="6" y="9.5" width="2" height="1.5" fill="{{ bg }}"></rect><rect x="6.5" y="8.5" width="1" height="3.5" fill="{{ bg }}"></rect><circle cx="14" cy="10" r="1" fill="{{ bg }}"></circle><circle cx="12.5" cy="11.5" r="1" fill="{{ bg }}"></circle>
+</sc-if>
+<sc-if value="{{ isRepeat }}" hint-placeholder-val="{{ false }}">
+<path d="M4 8a6 6 0 0110-4.2M16 3v4h-4" fill="none" stroke="{{ fg }}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path><path d="M16 12a6 6 0 01-10 4.2M4 17v-4h4" fill="none" stroke="{{ fg }}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
+</sc-if>
+<sc-if value="{{ isCard }}" hint-placeholder-val="{{ false }}">
+<rect x="2" y="5" width="16" height="11" rx="2"></rect><rect x="2" y="8" width="16" height="2" fill="{{ bg }}"></rect>
+</sc-if>
+<sc-if value="{{ isCoindown }}" hint-placeholder-val="{{ false }}">
+<circle cx="10" cy="8" r="6"></circle><path d="M10 12v5m0 0l-2.2-2.2M10 17l2.2-2.2" fill="none" stroke="{{ fg }}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
+</sc-if>
+<sc-if value="{{ isFuel }}" hint-placeholder-val="{{ false }}">
+<rect x="4" y="6" width="7" height="11" rx="1"></rect><rect x="6" y="3" width="3" height="3" rx="0.5"></rect><path d="M11 9h2a2 2 0 012 2v4a1.5 1.5 0 01-3 0V11h-1" fill="none" stroke="{{ fg }}" stroke-width="1.6" stroke-linecap="round"></path>
+</sc-if>
+<sc-if value="{{ isTag }}" hint-placeholder-val="{{ true }}">
+<path d="M3 3h6.5a1 1 0 01.7.3l6.5 6.5a1 1 0 010 1.4l-6.5 6.5a1 1 0 01-1.4 0L2.3 11.2a1 1 0 01-.3-.7V4a1 1 0 011-1z"></path><circle cx="6.5" cy="6.5" r="1.3" fill="{{ bg }}"></circle>
+</sc-if>
+</svg>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;icon&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;tag&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;food&quot;,&quot;transport&quot;,&quot;bills&quot;,&quot;shopping&quot;,&quot;health&quot;,&quot;salary&quot;,&quot;laptop&quot;,&quot;gift&quot;,&quot;tag&quot;,&quot;basket&quot;,&quot;home&quot;,&quot;bolt&quot;,&quot;wrench&quot;,&quot;pill&quot;,&quot;star&quot;,&quot;cap&quot;,&quot;heart&quot;,&quot;controller&quot;,&quot;repeat&quot;,&quot;card&quot;,&quot;coindown&quot;,&quot;fuel&quot;]},&quot;size&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:18,&quot;tsType&quot;:&quot;number&quot;},&quot;tile&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;},&quot;bg&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;fg&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+const PALETTE = {
+  food: { bg: '#ffe8b3', fg: '#b5790a' },
+  transport: { bg: '#cdeafc', fg: '#1f6fb0' },
+  bills: { bg: '#d7f5df', fg: '#1f8a4c' },
+  shopping: { bg: '#ffd9df', fg: '#c23566' },
+  health: { bg: '#ffe0d6', fg: '#d9542a' },
+  salary: { bg: '#e3ddfb', fg: '#5b3fc4' },
+  laptop: { bg: '#d7f0f7', fg: '#157a8a' },
+  gift: { bg: '#f9d9ff', fg: '#a531c2' },
+  tag: { bg: '#ececf2', fg: '#5b5b66' },
+  basket: { bg: '#d7f5df', fg: '#1f8a4c' },
+  home: { bg: '#cdeafc', fg: '#1f6fb0' },
+  bolt: { bg: '#cdeafc', fg: '#1f6fb0' },
+  wrench: { bg: '#cdeafc', fg: '#1f6fb0' },
+  pill: { bg: '#ffe0d6', fg: '#d9542a' },
+  star: { bg: '#e3ddfb', fg: '#5b3fc4' },
+  cap: { bg: '#e3ddfb', fg: '#5b3fc4' },
+  heart: { bg: '#ffe8b3', fg: '#b5790a' },
+  controller: { bg: '#fff3b0', fg: '#a67c00' },
+  repeat: { bg: '#fff3b0', fg: '#a67c00' },
+  card: { bg: '#ffe8b3', fg: '#b5790a' },
+  coindown: { bg: '#d7f5df', fg: '#1f8a4c' },
+  fuel: { bg: '#d7f5df', fg: '#1f8a4c' },
+};
+const SHAPE_KEYS = ['food', 'transport', 'bills', 'shopping', 'health', 'salary', 'laptop', 'gift', 'basket', 'home', 'bolt', 'wrench', 'pill', 'star', 'cap', 'heart', 'controller', 'repeat', 'card', 'coindown', 'fuel'];
+class Component extends DCLogic {
+  renderVals() {
+    const icon = this.props.icon || 'tag';
+    const p = PALETTE[icon] || PALETTE.tag;
+    const bg = this.props.bg || p.bg;
+    const fg = this.props.fg || p.fg;
+    const size = this.props.size || 18;
+    const tile = this.props.tile ?? true;
+    const vals = { bg, fg, glyphSize: tile ? Math.round(size * 0.58) : size };
+    SHAPE_KEYS.forEach((k) => { vals['is' + k[0].toUpperCase() + k.slice(1)] = icon === k; });
+    vals.isTag = icon === 'tag' || !SHAPE_KEYS.includes(icon);
+    vals.wrapStyle = tile
+      ? `width:${size}px;height:${size}px;border-radius:${Math.round(size * 0.32)}px;background:${bg};display:flex;align-items:center;justify-content:center;flex:none`
+      : 'display:flex';
+    return vals;
+  }
+}
+</script>
+</body>
+</html>
