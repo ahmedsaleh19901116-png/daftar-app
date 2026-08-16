@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { CURRENCIES, EXPENSE_CATS, INCOME_CATS, INCOME_GROWTH_TIPS, TIPS } from './constants';
-import { dateWithMonth, fmt as fmtHelper, formatDate, isOverdue, periodsFor, today } from './helpers';
+import { DatePeriod, dateWithMonth, filterByPeriod, fmt as fmtHelper, formatDate, isOverdue, periodsFor, today } from './helpers';
 import { catList, catName, SPECIAL_CATS } from './store';
 import { AppState, Category, Debt, Task, Transaction } from './types';
 
@@ -87,6 +87,43 @@ export function recentTransactions(state: AppState, fmt: (n: number) => string, 
 
 export function allTransactionsSorted(state: AppState): Transaction[] {
   return [...state.transactions].sort((a, b) => b.date.localeCompare(a.date));
+}
+
+export interface FilteredTxRow {
+  tx: Transaction;
+  icon: string;
+  title: string;
+  meta: string;
+  amountLabel: string;
+  isIncome: boolean;
+}
+
+export interface FilteredTransactionsResult {
+  rows: FilteredTxRow[];
+  incomeTotal: number;
+  expenseTotal: number;
+}
+
+export function filteredTransactions(
+  state: AppState,
+  filters: { type: 'all' | 'income' | 'expense'; categoryId: string; accountId: string; period: DatePeriod },
+): FilteredTransactionsResult {
+  let list = state.transactions;
+  if (filters.type !== 'all') list = list.filter((t) => t.type === filters.type);
+  if (filters.categoryId !== 'all') list = list.filter((t) => t.categoryId === filters.categoryId);
+  if (filters.accountId !== 'all') list = list.filter((t) => (t.accountId || 'cash') === filters.accountId);
+  list = filterByPeriod(list, filters.period);
+  const incomeTotalV = list.filter((t) => t.type === 'income').reduce((a, t) => a + txBase(state, t), 0);
+  const expenseTotalV = list.filter((t) => t.type === 'expense').reduce((a, t) => a + txBase(state, t), 0);
+  const rows = [...list].sort((a, b) => b.date.localeCompare(a.date)).map((t) => ({
+    tx: t,
+    icon: catIcon(state, t.type, t.categoryId),
+    title: t.note,
+    meta: catName(state, t.type, t.categoryId) + ' · ' + dateWithMonth(t.date),
+    amountLabel: (t.type === 'income' ? '+' : '-') + fmtTx(state, t),
+    isIncome: t.type === 'income',
+  }));
+  return { rows, incomeTotal: incomeTotalV, expenseTotal: expenseTotalV };
 }
 
 export function incomeTotal(state: AppState): number {

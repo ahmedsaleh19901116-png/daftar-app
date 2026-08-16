@@ -18,7 +18,7 @@ import { gradients } from '../theme/tokens';
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
 const QUICK_LINKS: { key: keyof RootStackParamList; label: string; icon: string; bg: string; fg: string; wide?: boolean }[] = [
-  { key: 'Budget' as any, label: 'الميزانية', icon: 'target', bg: '#d7f5df', fg: '#1f8a4c', wide: true },
+  { key: 'TransactionsTab' as any, label: 'العمليات', icon: 'list', bg: '#d7f5df', fg: '#1f8a4c', wide: true },
   { key: 'Income', label: 'سجل الراتب', icon: 'salary', bg: '#e3ddfb', fg: '#5b3fc4', wide: true },
   { key: 'Loans', label: 'سلف مشتركة', icon: 'people', bg: '#ffe0d6', fg: '#d9542a' },
   { key: 'Tasks', label: 'المهام', icon: 'check', bg: '#cdeafc', fg: '#1f6fb0' },
@@ -74,6 +74,15 @@ function QuickLinkGlyph({ icon, fg, bg, size = 17 }: { icon: string; fg: string;
           <Rect x={4} y={12.8} width={5} height={1.6} rx={0.8} fill={bg} />
         </Svg>
       );
+    case 'list':
+      return (
+        <Svg width={size} height={size} viewBox="0 0 20 20" fill="none">
+          <Path d="M7 5h11M7 10h11M7 15h11" stroke={fg} strokeWidth={2} strokeLinecap="round" />
+          <Circle cx={3} cy={5} r={1.2} fill={fg} />
+          <Circle cx={3} cy={10} r={1.2} fill={fg} />
+          <Circle cx={3} cy={15} r={1.2} fill={fg} />
+        </Svg>
+      );
     default:
       return <CategoryIcon icon={icon} size={size} tile={false} />;
   }
@@ -96,7 +105,7 @@ export function HomeScreen() {
   const tip = tips[tipIdx];
 
   const goQuickLink = (key: keyof RootStackParamList) => {
-    if (key === ('Budget' as any)) { navigation.navigate('Main', { screen: 'BudgetTab' } as any); return; }
+    if (key === ('TransactionsTab' as any)) { navigation.navigate('Main', { screen: 'TransactionsTab' } as any); return; }
     navigation.navigate(key as any);
   };
 
@@ -208,7 +217,7 @@ export function HomeScreen() {
         <View>
           <View style={{ flexDirection: rowDir('ar'), alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
             <AppText weight="bold" size={15}>آخر العمليات</AppText>
-            <TouchableOpacity onPress={() => navigation.navigate('AllTransactions')}>
+            <TouchableOpacity onPress={() => navigation.navigate('Main', { screen: 'TransactionsTab' } as any)}>
               <AppText size={12} weight="semiBold" color={colors.accentRamp[700]}>عرض الكل</AppText>
             </TouchableOpacity>
           </View>

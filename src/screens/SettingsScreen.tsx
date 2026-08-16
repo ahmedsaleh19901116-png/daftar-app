@@ -3,9 +3,9 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useState } from 'react';
 import { Alert, ScrollView, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { AppText, Button, Card, CenterModal, SegmentedControl, Tag, ToggleSwitch } from '../components';
+import { AppText, Button, Card, CenterModal, ExportDialog, SegmentedControl, Tag, ToggleSwitch } from '../components';
 import { IconUser } from '../components/Icons';
-import { exportBackup, exportTransactionsCsv, exportTransactionsPdf, importBackup, runPeriodReset } from '../data/backup';
+import { exportBackup, importBackup, runPeriodReset } from '../data/backup';
 import { accountBalance, accountBalanceRows, toBase, useFmt } from '../data/selectors';
 import { useDispatch, useStoreState } from '../data/store';
 import { useTheme } from '../theme/ThemeContext';
@@ -248,55 +248,6 @@ function TransferDialog({ visible, onClose }: { visible: boolean; onClose: () =>
         <View style={{ flexDirection: rowDir('ar'), gap: 8 }}>
           <Button label="إلغاء" variant="secondary" onPress={close} style={{ flex: 1 }} />
           <Button label="تحويل" onPress={confirm} style={{ flex: 1 }} />
-        </View>
-      </View>
-    </CenterModal>
-  );
-}
-
-function ExportDialog({ visible, onClose }: { visible: boolean; onClose: () => void }) {
-  const state = useStoreState();
-  const { colors } = useTheme();
-  const [period, setPeriod] = useState<'month' | 'quarter' | 'all'>('month');
-  const [format, setFormat] = useState<'csv' | 'pdf'>('csv');
-  const [loading, setLoading] = useState(false);
-
-  const run = async () => {
-    setLoading(true);
-    try {
-      if (format === 'csv') await exportTransactionsCsv(state, period);
-      else await exportTransactionsPdf(state, period);
-      onClose();
-    } catch {
-      Alert.alert('حدث خطأ أثناء التصدير');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <CenterModal visible={visible} onClose={onClose}>
-      <View style={{ gap: 14 }}>
-        <AppText weight="bold" size={16} style={{ textAlign: 'right' }}>تصدير التقرير</AppText>
-        <View>
-          <AppText size={12} weight="semiBold" opacity={0.6} style={{ textAlign: 'right', marginBottom: 6 }}>الفترة</AppText>
-          <SegmentedControl
-            options={[{ key: 'month', label: 'هذا الشهر' }, { key: 'quarter', label: 'آخر 3 أشهر' }, { key: 'all', label: 'كل الفترة' }]}
-            value={period}
-            onChange={(k) => setPeriod(k as any)}
-          />
-        </View>
-        <View>
-          <AppText size={12} weight="semiBold" opacity={0.6} style={{ textAlign: 'right', marginBottom: 6 }}>الصيغة</AppText>
-          <SegmentedControl
-            options={[{ key: 'csv', label: 'Excel/CSV' }, { key: 'pdf', label: 'PDF' }]}
-            value={format}
-            onChange={(k) => setFormat(k as any)}
-          />
-        </View>
-        <View style={{ flexDirection: rowDir('ar'), gap: 8 }}>
-          <Button label="إلغاء" variant="secondary" onPress={onClose} style={{ flex: 1 }} />
-          <Button label="تصدير" onPress={run} loading={loading} style={{ flex: 1 }} />
         </View>
       </View>
     </CenterModal>
