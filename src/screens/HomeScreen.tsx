@@ -5,7 +5,7 @@ import { ScrollView, TouchableOpacity, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
-import { AppText, CategoryIcon, Tag } from '../components';
+import { AppText, CategoryIcon, ExchangeRateWidget, Tag } from '../components';
 import { IconEdit, IconEye, IconEyeOff, IconGear, IconLightbulb, IconRefresh, IconTrendDown, IconTrendUp } from '../components/Icons';
 import { accountBalanceRows, combinedTips, expenseTotal, incomeTotal, recentTransactions, totalBalance, useFmt } from '../data/selectors';
 import { useDispatch, useStoreState } from '../data/store';
@@ -126,6 +126,7 @@ export function HomeScreen() {
         </View>
 
         <RatesStrip />
+        <ExchangeRateWidget />
 
         {/* Balance hero card */}
         <LinearGradient colors={gradients.balanceHero as any} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ borderRadius: radius.hero, padding: 20, overflow: 'hidden' }}>

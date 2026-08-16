@@ -1,6 +1,6 @@
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Alert, ScrollView, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppText, Button, Card, CenterModal, ExportDialog, SegmentedControl, Tag, ToggleSwitch } from '../components';
@@ -12,7 +12,6 @@ import { useTheme } from '../theme/ThemeContext';
 import { rowDir } from '../theme/rtl';
 import { CurrencyPickerSheet } from '../sheets/CurrencyPickerSheet';
 import { RootStackParamList } from '../navigation/types';
-import { fetchExchangeRate } from '../services/exchangeRate';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
@@ -31,11 +30,6 @@ export function SettingsScreen() {
   const accountRows = accountBalanceRows(state, fmt);
 
   const currencyName = state.selectedCurrency ? state.selectedCurrency.name : 'دينار عراقي';
-
-  // TEMPORARY: Firestore connectivity check for the exchange_rates setup task -- remove once verified.
-  useEffect(() => {
-    fetchExchangeRate().then((result) => console.log('[fetchExchangeRate]', result));
-  }, []);
 
   const onExport = async () => {
     try { await exportBackup(state); } catch { Alert.alert('حدث خطأ أثناء التصدير'); }
