@@ -6,10 +6,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppText, Button, Card, EmptyState, ScreenHeader, Tag } from '../components';
 import { installmentRemaining, useFmt } from '../data/selectors';
 import { useDispatch, useStoreState } from '../data/store';
-import { today } from '../data/helpers';
+import { monthlyPeriods, today } from '../data/helpers';
 import { useTheme } from '../theme/ThemeContext';
 import { rowDir } from '../theme/rtl';
 import { RootStackParamList } from '../navigation/types';
+import { scheduleReminder } from '../utils/notifications';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
@@ -29,12 +30,21 @@ export function InstallmentsScreen() {
 
   const totalDue = state.installmentPlans.reduce((a, p) => a + p.periods.filter((per) => per.status === 'pending').reduce((b, per) => b + per.amount, 0), 0);
 
-  const submit = () => {
+  const submit = async () => {
     const amt = Number(amount);
     const count = Math.max(1, Number(periods) || 1);
     if (!customerName || !(amt > 0)) return;
     const id = Date.now();
-    dispatch({ type: 'CREATE_INSTALLMENT_PLAN', id, customerName, amount: amt, periodsCount: count, startDate: start, item });
+    const periodAmount = amt / count;
+    const computedPeriods = monthlyPeriods(count, start, periodAmount);
+    const periodNotificationIds = await Promise.all(computedPeriods.map((p) => scheduleReminder({
+      id: `installment_${id}_${p.index}`,
+      type: 'installment',
+      title: 'تذكير قسط',
+      body: `موعد استحقاق قسط ${customerName} بقيمة ${Math.round(p.amount).toLocaleString('en-US')} د.ع اليوم`,
+      dueDate: new Date(p.dueDate as string),
+    })));
+    dispatch({ type: 'CREATE_INSTALLMENT_PLAN', id, customerName, amount: amt, periodsCount: count, startDate: start, item, periodNotificationIds });
     setCustomerName(''); setItem(''); setAmount(''); setPeriods('6'); setShowForm(false);
     navigation.navigate('InstallmentDetail', { planId: id });
   };

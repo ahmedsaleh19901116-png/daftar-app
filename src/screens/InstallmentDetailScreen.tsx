@@ -8,6 +8,7 @@ import { isOverdue, today } from '../data/helpers';
 import { useTheme } from '../theme/ThemeContext';
 import { rowDir } from '../theme/rtl';
 import { RootScreenProps } from '../navigation/types';
+import { cancelReminder } from '../utils/notifications';
 
 export function InstallmentDetailScreen({ route, navigation }: RootScreenProps<'InstallmentDetail'>) {
   const { planId } = route.params;
@@ -26,6 +27,12 @@ export function InstallmentDetailScreen({ route, navigation }: RootScreenProps<'
   }
 
   const remaining = installmentRemaining(plan);
+
+  const recordPayment = async (periodIndex: number) => {
+    const period = plan.periods.find((p) => p.index === periodIndex);
+    if (period) await cancelReminder(period.notificationId);
+    dispatch({ type: 'RECORD_PERIOD_PAYMENT', planId: plan.id, periodIndex });
+  };
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={['top']}>
@@ -50,7 +57,7 @@ export function InstallmentDetailScreen({ route, navigation }: RootScreenProps<'
               <TouchableOpacity
                 key={p.index}
                 disabled={p.status === 'paid'}
-                onPress={() => dispatch({ type: 'RECORD_PERIOD_PAYMENT', planId: plan.id, periodIndex: p.index })}
+                onPress={() => recordPayment(p.index)}
                 style={[{ flexDirection: rowDir('ar'), alignItems: 'center', justifyContent: 'space-between', padding: 14, backgroundColor: colors.surface, borderRadius: radius.card }, shadow.sm]}
               >
                 <View>

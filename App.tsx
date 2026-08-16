@@ -1,6 +1,6 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { useFonts, Cairo_400Regular, Cairo_500Medium, Cairo_600SemiBold, Cairo_700Bold, Cairo_800ExtraBold } from '@expo-google-fonts/cairo';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { ActivityIndicator, TextInput, View } from 'react-native';
 import Svg, { Path, Rect } from 'react-native-svg';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -11,6 +11,7 @@ import { QuickLogSheet } from './src/sheets/QuickLogSheet';
 import { AppText } from './src/components';
 import { StoreProvider, useDispatch, useStoreState } from './src/data/store';
 import { ThemeProvider, useTheme } from './src/theme/ThemeContext';
+import { setupNotifications } from './src/utils/notifications';
 
 function LockScreen() {
   const state = useStoreState();
@@ -69,6 +70,10 @@ export default function App() {
   const [fontsLoaded] = useFonts({
     Cairo_400Regular, Cairo_500Medium, Cairo_600SemiBold, Cairo_700Bold, Cairo_800ExtraBold,
   });
+
+  useEffect(() => {
+    setupNotifications();
+  }, []);
 
   if (!fontsLoaded) {
     return (

@@ -110,14 +110,14 @@ type Action =
   | { type: 'ADD_EXPENSE_CATEGORY'; name: string; icon: string }
   | { type: 'SET_BUDGET'; categoryId: string; value: number }
 
-  | { type: 'ADD_DEBT'; person: string; amount: number; direction: DebtDirection; note: string; accountId: string }
+  | { type: 'ADD_DEBT'; id: number; person: string; amount: number; direction: DebtDirection; note: string; accountId: string; dueDate?: string | null; notificationId?: string | null }
   | { type: 'CREATE_TRANSFER'; from: string; to: string; amount: number; currency: 'IQD' | 'USD'; note: string }
   | { type: 'PAY_DEBT_INSTALLMENT'; id: number; amount: number }
   | { type: 'WRITE_OFF_DEBT'; id: number }
   | { type: 'COLLECT_DEBT_PARTIAL'; id: number; amount: number }
   | { type: 'WRITE_OFF_OWED_TO_ME'; id: number }
 
-  | { type: 'ADD_TASK'; title: string; date: string; priority: TaskPriority }
+  | { type: 'ADD_TASK'; id: number; title: string; date: string; priority: TaskPriority; notificationId?: string | null }
   | { type: 'TOGGLE_MANUAL_TASK'; id: number | string }
   | { type: 'TOGGLE_AUTO_TASK'; id: string }
   | { type: 'OPEN_QUICK_LOG'; task: Task }
@@ -132,7 +132,7 @@ type Action =
 
   | { type: 'CREATE_UPFRONT_EXPENSE'; title: string; amount: number; periodsCount: number; startDate: string; categoryId: string }
 
-  | { type: 'CREATE_INSTALLMENT_PLAN'; id: number; customerName: string; amount: number; periodsCount: number; startDate: string; item: string }
+  | { type: 'CREATE_INSTALLMENT_PLAN'; id: number; customerName: string; amount: number; periodsCount: number; startDate: string; item: string; periodNotificationIds?: (string | null)[] }
   | { type: 'RECORD_PERIOD_PAYMENT'; planId: number; periodIndex: number }
 
   | { type: 'CREATE_SAVINGS_GOAL'; name: string; target: number; date: string }
@@ -258,13 +258,17 @@ function reducer(state: AppState, action: Action): AppState {
       if (!action.person || !(action.amount > 0)) return state;
       const isLoanGiven = action.direction === 'owed_to_me';
       const tx: Transaction = {
-        id: Date.now(), type: isLoanGiven ? 'expense' : 'income',
+        id: action.id + 1, type: isLoanGiven ? 'expense' : 'income',
         categoryId: isLoanGiven ? 'loan_given' : 'loan_received',
         amount: action.amount, currency: 'IQD', accountId: action.accountId, isTransfer: true, method: 'cash',
         note: (isLoanGiven ? 'قرض إلى ' : 'قرض من ') + action.person + (action.note ? ' — ' + action.note : ''),
         date: TODAY,
       };
-      const entry: Debt = { id: Date.now() + 1, person: action.person, type: action.direction, amount: action.amount, note: action.note, date: TODAY, settled: false, paidSoFar: 0, payments: [], linkedTransactionId: tx.id };
+      const entry: Debt = {
+        id: action.id, person: action.person, type: action.direction, amount: action.amount, note: action.note, date: TODAY,
+        settled: false, paidSoFar: 0, payments: [], linkedTransactionId: tx.id,
+        dueDate: action.dueDate ?? null, notificationId: action.notificationId ?? null,
+      };
       return { ...state, debts: [entry, ...state.debts], transactions: [tx, ...state.transactions] };
     }
     case 'CREATE_TRANSFER': {
@@ -286,20 +290,21 @@ function reducer(state: AppState, action: Action): AppState {
       if (!(amount > 0)) return state;
       const tx: Transaction = { id: Date.now(), type: 'expense', categoryId: d.categoryId || 'other', amount, note: 'دفعة دين لـ' + d.person, date: TODAY, method: 'cash' };
       const paidSoFar = (d.paidSoFar || 0) + amount;
+      const settled = paidSoFar >= d.amount;
       return {
         ...state, transactions: [tx, ...state.transactions],
-        debts: state.debts.map((x) => x.id === action.id ? { ...x, paidSoFar, settled: paidSoFar >= x.amount, payments: [...(x.payments || []), { date: TODAY, amount, linkedTransactionId: tx.id }] } : x),
+        debts: state.debts.map((x) => x.id === action.id ? { ...x, paidSoFar, settled, notificationId: settled ? null : x.notificationId, payments: [...(x.payments || []), { date: TODAY, amount, linkedTransactionId: tx.id }] } : x),
       };
     }
     case 'WRITE_OFF_DEBT': {
       const d = state.debts.find((x) => x.id === action.id);
       if (!d || d.settled) return state;
       const remaining = d.amount - (d.paidSoFar || 0);
-      if (remaining <= 0) return { ...state, debts: state.debts.map((x) => x.id === action.id ? { ...x, settled: true } : x) };
+      if (remaining <= 0) return { ...state, debts: state.debts.map((x) => x.id === action.id ? { ...x, settled: true, notificationId: null } : x) };
       const tx: Transaction = { id: Date.now(), type: 'expense', categoryId: d.categoryId || 'other', amount: remaining, note: 'تسديد كامل دين لـ' + d.person, date: TODAY, method: 'cash' };
       return {
         ...state, transactions: [tx, ...state.transactions],
-        debts: state.debts.map((x) => x.id === action.id ? { ...x, paidSoFar: x.amount, settled: true, payments: [...(x.payments || []), { date: TODAY, amount: remaining, linkedTransactionId: tx.id }] } : x),
+        debts: state.debts.map((x) => x.id === action.id ? { ...x, paidSoFar: x.amount, settled: true, notificationId: null, payments: [...(x.payments || []), { date: TODAY, amount: remaining, linkedTransactionId: tx.id }] } : x),
       };
     }
     case 'COLLECT_DEBT_PARTIAL': {
@@ -310,32 +315,33 @@ function reducer(state: AppState, action: Action): AppState {
       if (!(amount > 0)) return state;
       const tx: Transaction = { id: Date.now(), type: 'income', categoryId: d.categoryId || 'other_income', amount, note: 'دفعة تحصيل من ' + d.person, date: TODAY, method: 'cash' };
       const paidSoFar = (d.paidSoFar || 0) + amount;
+      const settled = paidSoFar >= d.amount;
       const charityPatch = applyCharity(state, amount);
       return {
         ...state, transactions: [tx, ...state.transactions], ...charityPatch,
-        debts: state.debts.map((x) => x.id === action.id ? { ...x, paidSoFar, settled: paidSoFar >= x.amount, payments: [...(x.payments || []), { date: TODAY, amount, linkedTransactionId: tx.id }] } : x),
+        debts: state.debts.map((x) => x.id === action.id ? { ...x, paidSoFar, settled, notificationId: settled ? null : x.notificationId, payments: [...(x.payments || []), { date: TODAY, amount, linkedTransactionId: tx.id }] } : x),
       };
     }
     case 'WRITE_OFF_OWED_TO_ME': {
       const d = state.debts.find((x) => x.id === action.id);
       if (!d || d.settled) return state;
       const remaining = d.amount - (d.paidSoFar || 0);
-      if (remaining <= 0) return { ...state, debts: state.debts.map((x) => x.id === action.id ? { ...x, settled: true } : x) };
+      if (remaining <= 0) return { ...state, debts: state.debts.map((x) => x.id === action.id ? { ...x, settled: true, notificationId: null } : x) };
       const tx: Transaction = { id: Date.now(), type: 'income', categoryId: d.categoryId || 'other_income', amount: remaining, note: 'تحصيل كامل من ' + d.person, date: TODAY, method: 'cash' };
       const charityPatch = applyCharity(state, remaining);
       return {
         ...state, transactions: [tx, ...state.transactions], ...charityPatch,
-        debts: state.debts.map((x) => x.id === action.id ? { ...x, paidSoFar: x.amount, settled: true, payments: [...(x.payments || []), { date: TODAY, amount: remaining, linkedTransactionId: tx.id }] } : x),
+        debts: state.debts.map((x) => x.id === action.id ? { ...x, paidSoFar: x.amount, settled: true, notificationId: null, payments: [...(x.payments || []), { date: TODAY, amount: remaining, linkedTransactionId: tx.id }] } : x),
       };
     }
 
     case 'ADD_TASK': {
       if (!action.title) return state;
-      const entry: Task = { id: Date.now(), title: action.title, date: action.date || TODAY, priority: action.priority, done: false };
+      const entry: Task = { id: action.id, title: action.title, date: action.date || TODAY, priority: action.priority, done: false, notificationId: action.notificationId ?? null };
       return { ...state, tasks: [entry, ...state.tasks] };
     }
     case 'TOGGLE_MANUAL_TASK':
-      return { ...state, tasks: state.tasks.map((t) => t.id === action.id ? { ...t, done: !t.done } : t) };
+      return { ...state, tasks: state.tasks.map((t) => t.id === action.id ? { ...t, done: !t.done, notificationId: !t.done ? null : t.notificationId } : t) };
     case 'TOGGLE_AUTO_TASK':
       return { ...state, autoTaskOverrides: { ...state.autoTaskOverrides, [action.id]: !state.autoTaskOverrides[action.id] } };
     case 'OPEN_QUICK_LOG':
@@ -401,7 +407,9 @@ function reducer(state: AppState, action: Action): AppState {
       const plan: InstallmentPlan = {
         id, customerName: action.customerName, itemDescription: action.item, totalAmount: action.amount, periodsCount: action.periodsCount,
         periodAmount, startDate: action.startDate,
-        periods: monthlyPeriods(action.periodsCount, action.startDate, periodAmount).map((p) => ({ ...p, status: 'pending' as const })),
+        periods: monthlyPeriods(action.periodsCount, action.startDate, periodAmount).map((p, i) => ({
+          ...p, status: 'pending' as const, notificationId: action.periodNotificationIds?.[i] ?? null,
+        })),
         status: 'active',
       };
       return { ...state, installmentPlans: [plan, ...state.installmentPlans] };
@@ -418,7 +426,7 @@ function reducer(state: AppState, action: Action): AppState {
         ...state, transactions: [tx, ...state.transactions], ...charityPatch,
         installmentPlans: state.installmentPlans.map((p) => p.id !== action.planId ? p : {
           ...p, status: allPaid ? 'completed' : p.status,
-          periods: p.periods.map((per) => per.index === action.periodIndex ? { ...per, status: 'paid' as const, paidDate: TODAY, linkedTransactionId: tx.id } : per),
+          periods: p.periods.map((per) => per.index === action.periodIndex ? { ...per, status: 'paid' as const, paidDate: TODAY, linkedTransactionId: tx.id, notificationId: null } : per),
         }),
       };
     }

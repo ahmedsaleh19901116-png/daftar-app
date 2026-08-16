@@ -7,6 +7,7 @@ import { useDispatch, useStoreState } from '../data/store';
 import { useTheme } from '../theme/ThemeContext';
 import { rowDir } from '../theme/rtl';
 import { RootScreenProps } from '../navigation/types';
+import { cancelReminder, scheduleReminder } from '../utils/notifications';
 
 export function DebtsScreen({ navigation }: RootScreenProps<'Debts'>) {
   const state = useStoreState();
@@ -17,6 +18,7 @@ export function DebtsScreen({ navigation }: RootScreenProps<'Debts'>) {
   const [name, setName] = useState('');
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
+  const [dueDate, setDueDate] = useState('');
   const [accountId, setAccountId] = useState(state.accounts[0]?.id ?? 'cash');
   const [error, setError] = useState('');
   const [payAmounts, setPayAmounts] = useState<Record<number, string>>({});
@@ -24,7 +26,7 @@ export function DebtsScreen({ navigation }: RootScreenProps<'Debts'>) {
   const owedToMe = debtRows(state, 'owed_to_me');
   const iOwe = debtRows(state, 'i_owe');
 
-  const submit = () => {
+  const submit = async () => {
     const amountNum = Number(amount);
     if (!name || !(amountNum > 0)) return;
     if (direction === 'owed_to_me' && amountNum > accountBalance(state, accountId)) {
@@ -32,8 +34,36 @@ export function DebtsScreen({ navigation }: RootScreenProps<'Debts'>) {
       return;
     }
     setError('');
-    dispatch({ type: 'ADD_DEBT', person: name, amount: amountNum, direction, note, accountId });
-    setName(''); setAmount(''); setNote('');
+    const id = Date.now();
+    let notificationId: string | null = null;
+    if (dueDate) {
+      notificationId = await scheduleReminder({
+        id: 'debt_' + id,
+        type: 'debt',
+        title: 'تذكير دين',
+        body: direction === 'i_owe'
+          ? `موعد استحقاق دين ${name} بقيمة ${amountNum.toLocaleString('en-US')} د.ع اليوم`
+          : `موعد تحصيل دين ${name} بقيمة ${amountNum.toLocaleString('en-US')} د.ع اليوم`,
+        dueDate: new Date(dueDate),
+      });
+    }
+    dispatch({ type: 'ADD_DEBT', id, person: name, amount: amountNum, direction, note, accountId, dueDate: dueDate || null, notificationId });
+    setName(''); setAmount(''); setNote(''); setDueDate('');
+  };
+
+  const payAndMaybeCancel = async (id: number, amt: number, action: 'PAY_DEBT_INSTALLMENT' | 'COLLECT_DEBT_PARTIAL') => {
+    const d = state.debts.find((x) => x.id === id);
+    if (d) {
+      const remaining = d.amount - (d.paidSoFar || 0);
+      if (amt >= remaining) await cancelReminder(d.notificationId);
+    }
+    dispatch({ type: action, id, amount: amt });
+  };
+
+  const writeOffAndCancel = async (id: number, action: 'WRITE_OFF_DEBT' | 'WRITE_OFF_OWED_TO_ME') => {
+    const d = state.debts.find((x) => x.id === id);
+    if (d) await cancelReminder(d.notificationId);
+    dispatch({ type: action, id });
   };
 
   return (
@@ -61,6 +91,7 @@ export function DebtsScreen({ navigation }: RootScreenProps<'Debts'>) {
           <TextInput value={name} onChangeText={setName} placeholder="الاسم" placeholderTextColor={colors.neutral[500]} style={inputStyle(colors, radius)} />
           <TextInput value={amount} onChangeText={setAmount} placeholder="المبلغ" keyboardType="numeric" placeholderTextColor={colors.neutral[500]} style={inputStyle(colors, radius)} />
           <TextInput value={note} onChangeText={setNote} placeholder="ملاحظة (اختياري)" placeholderTextColor={colors.neutral[500]} style={inputStyle(colors, radius)} />
+          <TextInput value={dueDate} onChangeText={setDueDate} placeholder="تاريخ الاستحقاق (اختياري) YYYY-MM-DD" placeholderTextColor={colors.neutral[500]} style={inputStyle(colors, radius)} />
           <View style={{ flexDirection: rowDir('ar'), gap: 8 }}>
             {state.accounts.map((a) => (
               <Tag key={a.id} label={a.icon + ' ' + a.name} variant={a.id === accountId ? 'accent' : 'outline'} onPress={() => setAccountId(a.id)} />
@@ -76,8 +107,8 @@ export function DebtsScreen({ navigation }: RootScreenProps<'Debts'>) {
           fmt={fmt}
           payAmounts={payAmounts}
           setPayAmounts={setPayAmounts}
-          onPay={(id: number, amt: number) => dispatch({ type: 'COLLECT_DEBT_PARTIAL', id, amount: amt })}
-          onWriteOff={(id: number) => dispatch({ type: 'WRITE_OFF_OWED_TO_ME', id })}
+          onPay={(id: number, amt: number) => payAndMaybeCancel(id, amt, 'COLLECT_DEBT_PARTIAL')}
+          onWriteOff={(id: number) => writeOffAndCancel(id, 'WRITE_OFF_OWED_TO_ME')}
           payLabel="سجل تحصيل"
           writeOffLabel="تحصيل الكل"
         />
@@ -87,8 +118,8 @@ export function DebtsScreen({ navigation }: RootScreenProps<'Debts'>) {
           fmt={fmt}
           payAmounts={payAmounts}
           setPayAmounts={setPayAmounts}
-          onPay={(id: number, amt: number) => dispatch({ type: 'PAY_DEBT_INSTALLMENT', id, amount: amt })}
-          onWriteOff={(id: number) => dispatch({ type: 'WRITE_OFF_DEBT', id })}
+          onPay={(id: number, amt: number) => payAndMaybeCancel(id, amt, 'PAY_DEBT_INSTALLMENT')}
+          onWriteOff={(id: number) => writeOffAndCancel(id, 'WRITE_OFF_DEBT')}
           payLabel="سجل دفعة"
           writeOffLabel="شطب"
         />

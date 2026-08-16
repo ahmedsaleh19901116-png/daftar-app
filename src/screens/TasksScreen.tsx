@@ -12,6 +12,7 @@ import { useTheme } from '../theme/ThemeContext';
 import { rowDir } from '../theme/rtl';
 import { RootStackParamList } from '../navigation/types';
 import { TaskPriority } from '../data/types';
+import { cancelReminder, scheduleReminder } from '../utils/notifications';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
@@ -33,7 +34,7 @@ export function TasksScreen() {
   const upcomingTasks = merged.filter((t) => t.date !== TODAY).sort((a, b) => a.date.localeCompare(b.date));
   const progress = taskProgress(state);
 
-  const onToggle = (task: MergedTask) => {
+  const onToggle = async (task: MergedTask) => {
     if (task.source && !task.done) {
       if (task.source === 'installment' && task.linkedEntityId) { navigation.navigate('InstallmentDetail', { planId: task.linkedEntityId }); return; }
       if (task.source === 'debt') { navigation.navigate('Debts'); return; }
@@ -41,12 +42,24 @@ export function TasksScreen() {
       if (task.source === 'commitment') { dispatch({ type: 'OPEN_QUICK_LOG', task }); return; }
     }
     if (task.source) { dispatch({ type: 'TOGGLE_AUTO_TASK', id: String(task.id) }); return; }
+    if (!task.done) {
+      const t = state.tasks.find((x) => x.id === task.id);
+      if (t) await cancelReminder(t.notificationId);
+    }
     dispatch({ type: 'TOGGLE_MANUAL_TASK', id: task.id });
   };
 
-  const submit = () => {
+  const submit = async () => {
     if (!title) return;
-    dispatch({ type: 'ADD_TASK', title, date: date || TODAY, priority });
+    const id = Date.now();
+    const notificationId = await scheduleReminder({
+      id: 'task_' + id,
+      type: 'task',
+      title: 'تذكير مهمة',
+      body: `حان وقت إنجاز مهمة: ${title}`,
+      dueDate: new Date(date || TODAY),
+    });
+    dispatch({ type: 'ADD_TASK', id, title, date: date || TODAY, priority, notificationId });
     setTitle('');
   };
 

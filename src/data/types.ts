@@ -47,6 +47,8 @@ export interface Debt {
   paidSoFar?: number;
   payments?: DebtPayment[];
   linkedTransactionId?: number;
+  dueDate?: string | null;
+  notificationId?: string | null;
 }
 
 export type TaskPriority = 'low' | 'medium' | 'high';
@@ -62,6 +64,7 @@ export interface Task {
   linkedEntityId?: number;
   amount?: number;
   categoryId?: string;
+  notificationId?: string | null;
 }
 
 export type InviteStatus = 'pending' | 'accepted' | 'declined';
@@ -116,6 +119,7 @@ export interface InstallmentPeriod {
   status: InstallmentStatus;
   paidDate?: string;
   linkedTransactionId?: number;
+  notificationId?: string | null;
 }
 
 export interface InstallmentPlan {
