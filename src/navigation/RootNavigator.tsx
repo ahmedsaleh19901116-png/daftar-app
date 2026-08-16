@@ -24,7 +24,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export function RootNavigator() {
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false, animation: 'slide_from_right' }}>
+    <Stack.Navigator screenOptions={{ headerShown: false, animation: 'slide_from_left' }}>
       <Stack.Screen name="Splash" component={SplashScreen} />
       <Stack.Screen name="Auth" component={AuthScreen} />
       <Stack.Screen name="About" component={AboutScreen} />
