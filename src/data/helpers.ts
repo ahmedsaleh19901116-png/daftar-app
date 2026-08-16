@@ -77,3 +77,14 @@ export function monthlyPeriods(count: number, startDate: string, amount: number)
 export function isOverdue(period: { status: string; dueDate: string }, todayStr: string): boolean {
   return period.status === 'pending' && period.dueDate < todayStr;
 }
+
+export type DatePeriod = 'month' | 'quarter' | 'all';
+
+/** Shared by the export dialog and the Transactions tab's period filter. */
+export function filterByPeriod<T extends { date: string }>(items: T[], period: DatePeriod): T[] {
+  if (period === 'all') return items;
+  const cutoff = new Date(today());
+  cutoff.setMonth(cutoff.getMonth() - (period === 'month' ? 1 : 3));
+  const cutoffStr = cutoff.toISOString().slice(0, 10);
+  return items.filter((t) => t.date >= cutoffStr);
+}

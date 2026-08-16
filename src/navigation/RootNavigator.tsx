@@ -1,7 +1,6 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React from 'react';
 import { AboutScreen } from '../screens/AboutScreen';
-import { AllTransactionsScreen } from '../screens/AllTransactionsScreen';
 import { AssistantScreen } from '../screens/AssistantScreen';
 import { AuthScreen } from '../screens/AuthScreen';
 import { CharityScreen } from '../screens/CharityScreen';
@@ -30,7 +29,6 @@ export function RootNavigator() {
       <Stack.Screen name="Auth" component={AuthScreen} />
       <Stack.Screen name="About" component={AboutScreen} />
       <Stack.Screen name="Main" component={MainTabs} />
-      <Stack.Screen name="AllTransactions" component={AllTransactionsScreen} />
       <Stack.Screen name="Income" component={IncomeScreen} />
       <Stack.Screen name="Tips" component={TipsScreen} />
       <Stack.Screen name="Debts" component={DebtsScreen} />

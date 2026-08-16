@@ -2,15 +2,15 @@ import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import React from 'react';
 import { TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { AppText, IconChart, IconGear, IconHome, IconPlus, IconWallet } from '../components';
+import { AppText, IconChart, IconGear, IconHome, IconList, IconPlus } from '../components';
 import { useDispatch } from '../data/store';
 import { useTheme } from '../theme/ThemeContext';
 
 const TAB_META: Record<string, { label: string; Icon: React.ComponentType<{ size?: number; color?: string }> }> = {
   HomeTab: { label: 'الرئيسية', Icon: IconHome },
   AnalyticsTab: { label: 'التحليلات', Icon: IconChart },
-  BudgetTab: { label: 'الميزانية', Icon: IconWallet },
-  SettingsTab: { label: 'الإعدادات', Icon: IconGear },
+  TransactionsTab: { label: 'العمليات', Icon: IconList },
+  SettingsTab: { label: 'حسابي', Icon: IconGear },
 };
 
 export function TabBar({ state, navigation }: BottomTabBarProps) {

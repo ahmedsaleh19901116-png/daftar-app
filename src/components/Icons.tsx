@@ -141,6 +141,16 @@ export function IconWallet({ size = 20, color = '#14142b', strokeWidth = 2.2 }: 
     </Svg>
   );
 }
+export function IconList({ size = 20, color = '#14142b', strokeWidth = 2.2 }: IconProps) {
+  return (
+    <Svg {...base(size)} fill="none">
+      <Path d="M8 6h13M8 12h13M8 18h13" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" />
+      <Circle cx={3.5} cy={6} r={1.4} fill={color} />
+      <Circle cx={3.5} cy={12} r={1.4} fill={color} />
+      <Circle cx={3.5} cy={18} r={1.4} fill={color} />
+    </Svg>
+  );
+}
 export function IconUser({ size = 20, color = '#14142b', strokeWidth = 2.2 }: IconProps) {
   return (
     <Svg {...base(size)} fill="none">

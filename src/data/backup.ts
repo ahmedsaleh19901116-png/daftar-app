@@ -2,19 +2,11 @@ import { Directory, File, Paths } from 'expo-file-system';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import { catName } from './store';
-import { today } from './helpers';
+import { DatePeriod, filterByPeriod, today } from './helpers';
 import { totalBalance } from './selectors';
 import { AppState, Transaction } from './types';
 
-export type ExportPeriod = 'month' | 'quarter' | 'all';
-
-function filterByPeriod(transactions: Transaction[], period: ExportPeriod): Transaction[] {
-  if (period === 'all') return transactions;
-  const cutoff = new Date(today());
-  cutoff.setMonth(cutoff.getMonth() - (period === 'month' ? 1 : 3));
-  const cutoffStr = cutoff.toISOString().slice(0, 10);
-  return transactions.filter((t) => t.date >= cutoffStr);
-}
+export type ExportPeriod = DatePeriod;
 
 function accountName(state: AppState, id?: string): string {
   return state.accounts.find((a) => a.id === (id || 'cash'))?.name ?? 'نقد';

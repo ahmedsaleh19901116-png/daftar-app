@@ -5,7 +5,6 @@ export type RootStackParamList = {
   Auth: undefined;
   About: { from: 'auth' | 'main' };
   Main: undefined;
-  AllTransactions: undefined;
   Income: undefined;
   Tips: undefined;
   Debts: undefined;
@@ -27,6 +26,6 @@ export type RootScreenProps<T extends keyof RootStackParamList> = NativeStackScr
 export type MainTabParamList = {
   HomeTab: undefined;
   AnalyticsTab: undefined;
-  BudgetTab: undefined;
+  TransactionsTab: undefined;
   SettingsTab: undefined;
 };

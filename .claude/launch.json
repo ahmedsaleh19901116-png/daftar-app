@@ -10,7 +10,7 @@
     {
       "name": "design-handoff",
       "runtimeExecutable": "C:\\Program Files\\nodejs\\node.exe",
-      "runtimeArgs": ["node_modules/serve/build/main.js", "-l", "4321", "project"],
+      "runtimeArgs": ["node_modules/serve/build/main.js", "-l", "4321", "project/design_handoff_v4/design_handoff_expense_tracker"],
       "port": 4321
     }
   ]
