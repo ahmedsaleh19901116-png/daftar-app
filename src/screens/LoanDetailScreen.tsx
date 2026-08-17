@@ -69,8 +69,8 @@ export function LoanDetailScreen({ route, navigation }: RootScreenProps<'LoanDet
               {detail.rows.map((r) => (
                 <View key={r.participantId} style={{ flexDirection: rowDir('ar'), alignItems: 'center', paddingVertical: 6 }}>
                   <View style={{ width: 110 }}>
-                    <AppText size={11.5} weight="semiBold" numberOfLines={1}>{r.orderLabel} {r.name}</AppText>
-                    <AppText size={9.5} opacity={0.5}>{r.progressLabel}</AppText>
+                    <AppText size={11.5} weight="semiBold" numberOfLines={1} style={{ textAlign: 'right' }}>{r.orderLabel} {r.name}</AppText>
+                    <AppText size={9.5} opacity={0.5} style={{ textAlign: 'right' }}>{r.progressLabel}</AppText>
                   </View>
                   {r.cells.map((c) => (
                     <TouchableOpacity

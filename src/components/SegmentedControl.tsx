@@ -1,6 +1,8 @@
 import React from 'react';
 import { TouchableOpacity, View } from 'react-native';
+import { useStoreState } from '../data/store';
 import { useTheme } from '../theme/ThemeContext';
+import { rowDir } from '../theme/rtl';
 import { AppText } from './AppText';
 
 interface Option {
@@ -16,8 +18,9 @@ interface Props {
 
 export function SegmentedControl({ options, value, onChange }: Props) {
   const { colors, radius } = useTheme();
+  const { lang } = useStoreState();
   return (
-    <View style={{ flexDirection: 'row', backgroundColor: colors.neutral[200], borderRadius: radius.pill, padding: 4 }}>
+    <View style={{ flexDirection: rowDir(lang), backgroundColor: colors.neutral[200], borderRadius: radius.pill, padding: 4 }}>
       {options.map((opt) => {
         const active = opt.key === value;
         return (

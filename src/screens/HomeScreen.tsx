@@ -161,7 +161,7 @@ export function HomeScreen() {
         </LinearGradient>
 
         {/* Quick link grid */}
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
+        <View style={{ flexDirection: rowDir('ar'), flexWrap: 'wrap', gap: 10 }}>
           {QUICK_LINKS.map((q) => (
             <TouchableOpacity
               key={q.label}

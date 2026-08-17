@@ -18,7 +18,8 @@ export function TabBar({ state, navigation }: BottomTabBarProps) {
   const dispatch = useDispatch();
   const insets = useSafeAreaInsets();
 
-  const routes = state.routes.filter((r) => r.name !== 'AddTab');
+  // Reversed so the first-registered tab (Home) lands on the right, matching RTL reading order.
+  const routes = state.routes.filter((r) => r.name !== 'AddTab').reverse();
   const leftRoutes = routes.slice(0, 2);
   const rightRoutes = routes.slice(2);
 

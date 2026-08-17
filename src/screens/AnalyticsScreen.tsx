@@ -214,7 +214,7 @@ export function AnalyticsScreen() {
         </Card>
 
         <AppText weight="bold" size={15}>🧭 نظرة شاملة</AppText>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+        <View style={{ flexDirection: rowDir('ar'), flexWrap: 'wrap', gap: 8 }}>
           <OverviewTile label="مدخرات القاصة" value={fmt(savingsTotal)} onPress={() => navigation.navigate('Goals')} />
           <OverviewTile label="مهام اليوم" value={tp.done + ' / ' + tp.total} onPress={() => navigation.navigate('Tasks')} />
           <OverviewTile label="أطلب من الناس" value={fmt(debtsTotal(state, 'owed_to_me'))} onPress={() => navigation.navigate('Debts')} titleColor={colors.accentRamp[700]} valueColor={colors.accentRamp[700]} />
