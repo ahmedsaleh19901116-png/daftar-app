@@ -104,11 +104,9 @@ export function LoansScreen() {
             <AppText weight="semiBold" size={12} style={{ textAlign: 'right', marginTop: 4 }}>المشاركون</AppText>
             {participants.map((p, idx) => (
               <View key={idx} style={{ flexDirection: rowDir('ar'), gap: 8, alignItems: 'center' }}>
-                {participants.length > 2 ? (
-                  <TouchableOpacity onPress={() => setParticipants((rows) => rows.filter((_, i) => i !== idx))}>
-                    <IconClose size={16} color={colors.neutral[600]} />
-                  </TouchableOpacity>
-                ) : null}
+                <View style={{ width: 22, height: 22, borderRadius: 11, backgroundColor: colors.accentTint, alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <AppText size={11} weight="bold" color={colors.accentRamp[700]}>{idx + 1}</AppText>
+                </View>
                 <TextInput
                   value={p.name} onChangeText={(v) => updateParticipant(idx, { name: v })} placeholder="الاسم"
                   placeholderTextColor={colors.neutral[500]} style={[inputStyle(colors, radius), { flex: 2 }]}
@@ -121,6 +119,11 @@ export function LoansScreen() {
                   value={p.phone} onChangeText={(v) => updateParticipant(idx, { phone: v })} placeholder="جوال (اختياري)" keyboardType="phone-pad"
                   placeholderTextColor={colors.neutral[500]} style={[inputStyle(colors, radius), { flex: 1.4 }]}
                 />
+                {participants.length > 2 ? (
+                  <TouchableOpacity onPress={() => setParticipants((rows) => rows.filter((_, i) => i !== idx))} style={{ flexShrink: 0 }}>
+                    <IconClose size={16} color={colors.neutral[600]} />
+                  </TouchableOpacity>
+                ) : null}
               </View>
             ))}
             <TouchableOpacity onPress={() => setParticipants((rows) => [...rows, { name: '', share: '', phone: '' }])}>

@@ -126,6 +126,7 @@ type Action =
   | { type: 'CONFIRM_QUICK_LOG' }
 
   | { type: 'CREATE_SHARED_LOAN'; id: number; name: string; amount: number; start: string; end: string; freq: LoanFrequency; participants: { name: string; phone?: string; share: number }[] }
+  | { type: 'DELETE_SHARED_LOAN'; loanId: number }
   | { type: 'TOGGLE_LOAN_PAYMENT'; loanId: number; participantId: number; periodIndex: number }
   | { type: 'SET_LOAN_ORDER'; loanId: number; order: number[] }
   | { type: 'ACCEPT_INVITE'; loanId: number; participantId: number }
@@ -369,6 +370,8 @@ function reducer(state: AppState, action: Action): AppState {
       const loan: SharedLoan = { id, name: action.name, totalAmount: action.amount, startDate: action.start, endDate: action.end, frequency: action.freq, participants, order: [], payments: {} };
       return { ...state, sharedLoans: [loan, ...state.sharedLoans] };
     }
+    case 'DELETE_SHARED_LOAN':
+      return { ...state, sharedLoans: state.sharedLoans.filter((l) => l.id !== action.loanId) };
     case 'TOGGLE_LOAN_PAYMENT':
       return {
         ...state,

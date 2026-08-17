@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Animated, Easing, ScrollView, TouchableOpacity, View } from 'react-native';
+import { Alert, Animated, Easing, ScrollView, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppText, Button, Card, CenterModal, ScreenHeader, Tag } from '../components';
 import { IconCheck, IconCompass } from '../components/Icons';
@@ -21,6 +21,24 @@ export function LoanDetailScreen({ route, navigation }: RootScreenProps<'LoanDet
   const [showLottery, setShowLottery] = useState(false);
 
   const detail = loanDetail(state, loanId);
+
+  const confirmDelete = () => {
+    Alert.alert(
+      'حذف السلفة',
+      'هل أنت متأكد من حذف هذه السلفة؟ لا يمكن التراجع عن هذا الإجراء.',
+      [
+        { text: 'إلغاء', style: 'cancel' },
+        {
+          text: 'حذف', style: 'destructive',
+          onPress: () => {
+            dispatch({ type: 'DELETE_SHARED_LOAN', loanId });
+            navigation.goBack();
+          },
+        },
+      ],
+    );
+  };
+
   if (!detail) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }}>
@@ -90,6 +108,8 @@ export function LoanDetailScreen({ route, navigation }: RootScreenProps<'LoanDet
             </View>
           </ScrollView>
         </View>
+
+        <Button label="حذف السلفة" variant="danger" block onPress={confirmDelete} />
       </ScrollView>
 
       <LotteryModal
