@@ -12,3 +12,4 @@ export * from './CategoryIcon';
 export * from './Icons';
 export * from './ExportDialog';
 export * from './ExchangeRateWidget';
+export * from './DateField';

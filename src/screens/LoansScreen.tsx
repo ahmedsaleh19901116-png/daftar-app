@@ -3,7 +3,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useState } from 'react';
 import { ScrollView, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { AppText, Button, Card, EmptyState, ProgressBar, ScreenHeader, SegmentedControl } from '../components';
+import { AppText, Button, Card, DateField, EmptyState, ProgressBar, ScreenHeader, SegmentedControl } from '../components';
 import { IconClose } from '../components/Icons';
 import { loansList, useFmt } from '../data/selectors';
 import { useDispatch, useStoreState } from '../data/store';
@@ -92,8 +92,12 @@ export function LoansScreen() {
             <TextInput value={name} onChangeText={setName} placeholder="اسم السلفة" placeholderTextColor={colors.neutral[500]} style={inputStyle(colors, radius)} />
             <TextInput value={amount} onChangeText={setAmount} placeholder="المبلغ الإجمالي" keyboardType="numeric" placeholderTextColor={colors.neutral[500]} style={inputStyle(colors, radius)} />
             <View style={{ flexDirection: rowDir('ar'), gap: 8 }}>
-              <TextInput value={start} onChangeText={setStart} placeholder="تاريخ البدء YYYY-MM-DD" placeholderTextColor={colors.neutral[500]} style={[inputStyle(colors, radius), { flex: 1 }]} />
-              <TextInput value={end} onChangeText={setEnd} placeholder="تاريخ الانتهاء YYYY-MM-DD" placeholderTextColor={colors.neutral[500]} style={[inputStyle(colors, radius), { flex: 1 }]} />
+              <View style={{ flex: 1 }}>
+                <DateField value={start} onChange={setStart} placeholder="تاريخ البدء" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <DateField value={end} onChange={setEnd} placeholder="تاريخ الانتهاء" minimumDate={start || undefined} />
+              </View>
             </View>
             <SegmentedControl options={[{ key: 'monthly', label: 'شهري' }, { key: 'weekly', label: 'أسبوعي' }]} value={freq} onChange={(f) => setFreq(f as LoanFrequency)} />
 
