@@ -43,7 +43,7 @@ export function AddEditTransactionSheet() {
 
   return (
     <SheetModal visible={state.showAdd} onClose={close}>
-      <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 36 }} keyboardShouldPersistTaps="handled">
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 20, paddingBottom: 36 }} keyboardShouldPersistTaps="handled">
         <View style={{ flexDirection: rowDir('ar'), alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
           <AppText weight="bold" size={18}>{isEditing ? 'تعديل عملية' : 'إضافة عملية'}</AppText>
           <TouchableOpacity onPress={close} style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: colors.accentTint, alignItems: 'center', justifyContent: 'center' }}>

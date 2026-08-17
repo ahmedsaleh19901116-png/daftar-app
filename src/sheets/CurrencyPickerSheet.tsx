@@ -17,7 +17,7 @@ export function CurrencyPickerSheet({ visible, onClose }: { visible: boolean; on
       <View style={{ padding: 20, paddingBottom: 8 }}>
         <AppText weight="bold" size={17} style={{ textAlign: 'right' }}>اختر العملة</AppText>
       </View>
-      <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 30, gap: 8 }}>
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 30, gap: 8 }}>
         {CURRENCIES.map((c) => {
           const selected = c.code === selectedCode;
           return (
