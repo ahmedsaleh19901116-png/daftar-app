@@ -27,6 +27,7 @@ export function dateWithMonth(d: string): string {
 export function formatDate(d?: string): string {
   if (!d) return '';
   const [y, m, dd] = d.split('-');
+  if (!y || !m || !dd) return d;
   return `${dd}/${m}/${y}`;
 }
 

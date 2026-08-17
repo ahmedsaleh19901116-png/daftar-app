@@ -43,6 +43,15 @@ export function LoansScreen() {
       setError('تحقق من تعبئة كل الحقول ووجود مشاركين صالحين (٢ على الأقل)');
       return;
     }
+    const dateRe = /^\d{4}-\d{2}-\d{2}$/;
+    if (!dateRe.test(start) || !dateRe.test(end)) {
+      setError('صيغة التاريخ يجب أن تكون YYYY-MM-DD، مثال: 2026-08-16');
+      return;
+    }
+    if (end <= start) {
+      setError('تاريخ الانتهاء يجب أن يكون بعد تاريخ البدء');
+      return;
+    }
     const sharesTotal = valid.reduce((a, p) => a + Number(p.share), 0);
     if (Math.round(sharesTotal) !== Math.round(Number(amount))) {
       setError(`مجموع حصص المشاركين (${fmt(sharesTotal)}) لا يطابق مبلغ السلفة الإجمالي (${fmt(Number(amount))})`);
@@ -83,8 +92,8 @@ export function LoansScreen() {
             <TextInput value={name} onChangeText={setName} placeholder="اسم السلفة" placeholderTextColor={colors.neutral[500]} style={inputStyle(colors, radius)} />
             <TextInput value={amount} onChangeText={setAmount} placeholder="المبلغ الإجمالي" keyboardType="numeric" placeholderTextColor={colors.neutral[500]} style={inputStyle(colors, radius)} />
             <View style={{ flexDirection: rowDir('ar'), gap: 8 }}>
-              <TextInput value={start} onChangeText={setStart} placeholder="تاريخ البدء" placeholderTextColor={colors.neutral[500]} style={[inputStyle(colors, radius), { flex: 1 }]} />
-              <TextInput value={end} onChangeText={setEnd} placeholder="تاريخ الانتهاء" placeholderTextColor={colors.neutral[500]} style={[inputStyle(colors, radius), { flex: 1 }]} />
+              <TextInput value={start} onChangeText={setStart} placeholder="تاريخ البدء YYYY-MM-DD" placeholderTextColor={colors.neutral[500]} style={[inputStyle(colors, radius), { flex: 1 }]} />
+              <TextInput value={end} onChangeText={setEnd} placeholder="تاريخ الانتهاء YYYY-MM-DD" placeholderTextColor={colors.neutral[500]} style={[inputStyle(colors, radius), { flex: 1 }]} />
             </View>
             <SegmentedControl options={[{ key: 'monthly', label: 'شهري' }, { key: 'weekly', label: 'أسبوعي' }]} value={freq} onChange={(f) => setFreq(f as LoanFrequency)} />
 
