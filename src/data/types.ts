@@ -52,7 +52,7 @@ export interface Debt {
 }
 
 export type TaskPriority = 'low' | 'medium' | 'high';
-export type TaskSource = 'commitment' | 'installment' | 'debt' | 'goal';
+export type TaskSource = 'commitment' | 'installment' | 'debt' | 'goal' | 'debt_collect';
 
 export interface Task {
   id: number | string;
@@ -218,6 +218,12 @@ export interface AppState {
   charityPercent: number;
   charityPending: number;
   charityLog: CharityLogEntry[];
+
+  weatherLoading: boolean;
+  weatherDenied: boolean;
+  weatherTemp: number | null;
+  weatherCondition: 'sunny' | 'cloudy' | 'other';
+  weatherCity: string;
 
   ratesExpanded: boolean;
   ratesLoading: boolean;

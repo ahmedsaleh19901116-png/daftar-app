@@ -19,6 +19,7 @@ export type RootStackParamList = {
   Referral: undefined;
   PaymentMethods: undefined;
   WidgetSetup: undefined;
+  Transfers: undefined;
 };
 
 export type RootScreenProps<T extends keyof RootStackParamList> = NativeStackScreenProps<RootStackParamList, T>;

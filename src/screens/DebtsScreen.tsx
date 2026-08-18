@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { ScrollView, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { AppText, Button, Card, EmptyState, ProgressBar, ScreenHeader, SegmentedControl, Tag } from '../components';
+import { AppText, Button, Card, DateField, EmptyState, ProgressBar, ScreenHeader, SegmentedControl, Tag } from '../components';
 import { accountBalance, debtRows, debtsTotal, useFmt } from '../data/selectors';
 import { useDispatch, useStoreState } from '../data/store';
+import { today } from '../data/helpers';
 import { useTheme } from '../theme/ThemeContext';
 import { rowDir } from '../theme/rtl';
 import { RootScreenProps } from '../navigation/types';
@@ -19,6 +20,7 @@ export function DebtsScreen({ navigation }: RootScreenProps<'Debts'>) {
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
   const [dueDate, setDueDate] = useState('');
+  const [debtDate, setDebtDate] = useState(today());
   const [accountId, setAccountId] = useState(state.accounts[0]?.id ?? 'cash');
   const [error, setError] = useState('');
   const [payAmounts, setPayAmounts] = useState<Record<number, string>>({});
@@ -47,8 +49,8 @@ export function DebtsScreen({ navigation }: RootScreenProps<'Debts'>) {
         dueDate: new Date(dueDate),
       });
     }
-    dispatch({ type: 'ADD_DEBT', id, person: name, amount: amountNum, direction, note, accountId, dueDate: dueDate || null, notificationId });
-    setName(''); setAmount(''); setNote(''); setDueDate('');
+    dispatch({ type: 'ADD_DEBT', id, person: name, amount: amountNum, direction, note, accountId, date: debtDate, dueDate: dueDate || null, notificationId });
+    setName(''); setAmount(''); setNote(''); setDueDate(''); setDebtDate(today());
   };
 
   const payAndMaybeCancel = async (id: number, amt: number, action: 'PAY_DEBT_INSTALLMENT' | 'COLLECT_DEBT_PARTIAL') => {
@@ -91,6 +93,7 @@ export function DebtsScreen({ navigation }: RootScreenProps<'Debts'>) {
           <TextInput value={name} onChangeText={setName} placeholder="الاسم" placeholderTextColor={colors.neutral[500]} style={inputStyle(colors, radius)} />
           <TextInput value={amount} onChangeText={setAmount} placeholder="المبلغ" keyboardType="numeric" placeholderTextColor={colors.neutral[500]} style={inputStyle(colors, radius)} />
           <TextInput value={note} onChangeText={setNote} placeholder="ملاحظة (اختياري)" placeholderTextColor={colors.neutral[500]} style={inputStyle(colors, radius)} />
+          <DateField value={debtDate} onChange={setDebtDate} placeholder="تاريخ الدين" />
           <TextInput value={dueDate} onChangeText={setDueDate} placeholder="تاريخ الاستحقاق (اختياري) YYYY-MM-DD" placeholderTextColor={colors.neutral[500]} style={inputStyle(colors, radius)} />
           <View style={{ flexDirection: rowDir('ar'), gap: 8 }}>
             {state.accounts.map((a) => (
@@ -111,6 +114,7 @@ export function DebtsScreen({ navigation }: RootScreenProps<'Debts'>) {
           onWriteOff={(id: number) => writeOffAndCancel(id, 'WRITE_OFF_OWED_TO_ME')}
           payLabel="سجل تحصيل"
           writeOffLabel="تحصيل الكل"
+          overdueText="⚠ متأخر — مضى أكثر من شهر بدون تحصيل"
         />
         <DebtGroup
           title="مطلوب"
@@ -122,26 +126,32 @@ export function DebtsScreen({ navigation }: RootScreenProps<'Debts'>) {
           onWriteOff={(id: number) => writeOffAndCancel(id, 'WRITE_OFF_DEBT')}
           payLabel="سجل دفعة"
           writeOffLabel="شطب"
+          overdueText="⚠ متأخر — مضى أكثر من شهر بدون سداد"
         />
       </ScrollView>
     </SafeAreaView>
   );
 }
 
-function DebtGroup({ title, rows, fmt, payAmounts, setPayAmounts, onPay, onWriteOff, payLabel, writeOffLabel }: any) {
+function DebtGroup({ title, rows, fmt, payAmounts, setPayAmounts, onPay, onWriteOff, payLabel, writeOffLabel, overdueText }: any) {
   const { colors, radius } = useTheme();
   return (
     <View>
       <AppText weight="bold" size={14} style={{ textAlign: 'right', marginBottom: 10 }}>{title}</AppText>
       {rows.length === 0 ? <EmptyState text="لا توجد عناصر بعد" /> : (
         <View style={{ gap: 10 }}>
-          {rows.map(({ debt, paidPct }: any) => (
+          {rows.map(({ debt, paidPct, dateLabel, daysAgoLabel, overdue }: any) => (
             <Card key={debt.id} style={debt.settled ? { opacity: 0.45 } : undefined}>
               <View style={{ flexDirection: rowDir('ar'), justifyContent: 'space-between' }}>
                 <AppText weight="semiBold" size={13.5} style={debt.settled ? { textDecorationLine: 'line-through' } : undefined}>{debt.person}</AppText>
                 <AppText weight="bold" size={13.5}>{fmt(debt.amount)}</AppText>
               </View>
+              <View style={{ flexDirection: rowDir('ar'), justifyContent: 'space-between', marginTop: 2 }}>
+                <AppText size={10.5} opacity={0.55}>{dateLabel}</AppText>
+                <AppText size={10.5} opacity={0.55}>{daysAgoLabel}</AppText>
+              </View>
               {debt.note ? <AppText size={11} opacity={0.55} style={{ textAlign: 'right', marginTop: 2 }}>{debt.note}</AppText> : null}
+              {overdue ? <AppText size={10} color="#c23566" style={{ textAlign: 'right', marginTop: 6 }}>{overdueText}</AppText> : null}
               {!debt.settled ? (
                 <>
                   <View style={{ marginTop: 10 }}>

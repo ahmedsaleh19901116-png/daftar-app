@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { CURRENCIES, EXPENSE_CATS, INCOME_CATS, INCOME_GROWTH_TIPS, TIPS } from './constants';
-import { DatePeriod, dateWithMonth, filterByPeriod, fmt as fmtHelper, formatDate, isOverdue, periodsFor, today } from './helpers';
+import { DatePeriod, dateWithMonth, daysSince, daysSinceLabel, filterByPeriod, fmt as fmtHelper, formatDate, isOverdue, periodsFor, today } from './helpers';
 import { catList, catName, SPECIAL_CATS } from './store';
 import { AppState, Category, Debt, Task, Transaction } from './types';
 
@@ -355,13 +355,23 @@ export function assistantInsightRows(state: AppState, fmt: (n: number) => string
 export interface DebtRow {
   debt: Debt;
   paidPct: number;
+  dateLabel: string;
+  daysAgoLabel: string;
+  overdue: boolean;
 }
 
 export function debtRows(state: AppState, type: 'owed_to_me' | 'i_owe'): DebtRow[] {
-  return state.debts.filter((d) => d.type === type).map((d) => ({
-    debt: d,
-    paidPct: Math.min(100, Math.round(((d.paidSoFar || 0) / d.amount) * 100)),
-  }));
+  return state.debts
+    .filter((d) => d.type === type)
+    .slice()
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .map((d) => ({
+      debt: d,
+      paidPct: Math.min(100, Math.round(((d.paidSoFar || 0) / d.amount) * 100)),
+      dateLabel: dateWithMonth(d.date),
+      daysAgoLabel: daysSinceLabel(d.date),
+      overdue: !d.settled && daysSince(d.date) >= 30,
+    }));
 }
 
 export function debtsTotal(state: AppState, type: 'owed_to_me' | 'i_owe'): number {
@@ -374,7 +384,7 @@ export interface MergedTask extends Task {
   sourceEmoji?: string;
 }
 
-const SOURCE_ICON: Record<string, string> = { commitment: '🏠', installment: '🧾', debt: '💳', goal: '🎯' };
+const SOURCE_ICON: Record<string, string> = { commitment: '🏠', installment: '🧾', debt: '💳', goal: '🎯', debt_collect: '📞' };
 
 export function collectAutoTasks(state: AppState): Task[] {
   const TODAY = today();
@@ -395,6 +405,9 @@ export function collectAutoTasks(state: AppState): Task[] {
   });
   state.savingsGoals.filter((g) => g.status === 'active' && g.targetDate).forEach((g) => {
     items.push({ id: 'goal_' + g.id, title: 'مساهمة شهرية في ' + g.name, date: TODAY, priority: 'low', source: 'goal', linkedEntityId: g.id, done: false });
+  });
+  state.debts.filter((d) => d.type === 'owed_to_me' && !d.settled && daysSince(d.date) >= 14).forEach((d) => {
+    items.push({ id: 'debt_collect_' + d.id, title: 'تذكير بتحصيل دين من ' + d.person, date: TODAY, priority: daysSince(d.date) >= 30 ? 'high' : 'low', source: 'debt_collect', linkedEntityId: d.id, amount: d.amount, done: false });
   });
   return items;
 }

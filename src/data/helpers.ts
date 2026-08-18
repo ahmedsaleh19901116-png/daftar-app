@@ -79,6 +79,20 @@ export function isOverdue(period: { status: string; dueDate: string }, todayStr:
   return period.status === 'pending' && period.dueDate < todayStr;
 }
 
+export function daysSince(d: string): number {
+  return Math.floor((new Date(today()).getTime() - new Date(d).getTime()) / 86400000);
+}
+
+/** Ported 1:1 from prototype's daysSinceLabel(d). */
+export function daysSinceLabel(d: string): string {
+  const n = daysSince(d);
+  if (n <= 0) return 'اليوم';
+  if (n === 1) return 'منذ يوم';
+  if (n < 30) return 'منذ ' + n + ' يوم';
+  const months = Math.floor(n / 30);
+  return 'منذ ' + months + (months === 1 ? ' شهر' : ' أشهر');
+}
+
 export type DatePeriod = 'month' | 'quarter' | 'all';
 
 /** Shared by the export dialog and the Transactions tab's period filter. */

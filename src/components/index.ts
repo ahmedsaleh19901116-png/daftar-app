@@ -13,3 +13,5 @@ export * from './Icons';
 export * from './ExportDialog';
 export * from './ExchangeRateWidget';
 export * from './DateField';
+export * from './TransferDialog';
+export * from './ToolsModal';

@@ -37,7 +37,7 @@ export function TasksScreen() {
   const onToggle = async (task: MergedTask) => {
     if (task.source && !task.done) {
       if (task.source === 'installment' && task.linkedEntityId) { navigation.navigate('InstallmentDetail', { planId: task.linkedEntityId }); return; }
-      if (task.source === 'debt') { navigation.navigate('Debts'); return; }
+      if (task.source === 'debt' || task.source === 'debt_collect') { navigation.navigate('Debts'); return; }
       if (task.source === 'goal') { navigation.navigate('Goals'); return; }
       if (task.source === 'commitment') { dispatch({ type: 'OPEN_QUICK_LOG', task }); return; }
     }

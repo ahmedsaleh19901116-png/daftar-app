@@ -12,6 +12,7 @@ import { AppText } from './src/components';
 import { StoreProvider, useDispatch, useStoreState } from './src/data/store';
 import { ThemeProvider, useTheme } from './src/theme/ThemeContext';
 import { setupNotifications } from './src/utils/notifications';
+import { requestWeather } from './src/utils/weather';
 
 function LockScreen() {
   const state = useStoreState();
@@ -43,7 +44,13 @@ function LockScreen() {
 
 function Shell() {
   const state = useStoreState();
+  const dispatch = useDispatch();
   const { colors, dark } = useTheme();
+
+  useEffect(() => {
+    requestWeather(dispatch);
+  }, []);
+
   return (
     <NavigationContainer>
       <View style={{ flex: 1, backgroundColor: colors.bg }}>

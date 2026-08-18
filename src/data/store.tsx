@@ -60,6 +60,12 @@ function createInitialState(): AppState {
     charityPending: 0,
     charityLog: seedCharityLog,
 
+    weatherLoading: true,
+    weatherDenied: false,
+    weatherTemp: null,
+    weatherCondition: 'sunny',
+    weatherCity: '',
+
     ratesExpanded: false,
     ratesLoading: false,
     ratesOffline: false,
@@ -110,7 +116,7 @@ type Action =
   | { type: 'ADD_EXPENSE_CATEGORY'; name: string; icon: string }
   | { type: 'SET_BUDGET'; categoryId: string; value: number }
 
-  | { type: 'ADD_DEBT'; id: number; person: string; amount: number; direction: DebtDirection; note: string; accountId: string; dueDate?: string | null; notificationId?: string | null }
+  | { type: 'ADD_DEBT'; id: number; person: string; amount: number; direction: DebtDirection; note: string; accountId: string; date?: string; dueDate?: string | null; notificationId?: string | null }
   | { type: 'CREATE_TRANSFER'; from: string; to: string; amount: number; currency: 'IQD' | 'USD'; note: string }
   | { type: 'PAY_DEBT_INSTALLMENT'; id: number; amount: number }
   | { type: 'WRITE_OFF_DEBT'; id: number }
@@ -163,6 +169,10 @@ type Action =
   | { type: 'SET_RATES_EXPANDED'; value: boolean }
   | { type: 'REFRESH_RATES_START' }
   | { type: 'REFRESH_RATES_APPLY' }
+
+  | { type: 'REQUEST_WEATHER_START' }
+  | { type: 'APPLY_WEATHER'; temp: number; condition: 'sunny' | 'cloudy' | 'other'; city: string }
+  | { type: 'WEATHER_DENIED' }
 
   | { type: 'SET_LANG'; lang: 'ar' | 'en' }
   | { type: 'TOGGLE_DARK_MODE' }
@@ -258,15 +268,16 @@ function reducer(state: AppState, action: Action): AppState {
     case 'ADD_DEBT': {
       if (!action.person || !(action.amount > 0)) return state;
       const isLoanGiven = action.direction === 'owed_to_me';
+      const date = action.date || TODAY;
       const tx: Transaction = {
         id: action.id + 1, type: isLoanGiven ? 'expense' : 'income',
         categoryId: isLoanGiven ? 'loan_given' : 'loan_received',
         amount: action.amount, currency: 'IQD', accountId: action.accountId, isTransfer: true, method: 'cash',
         note: (isLoanGiven ? 'قرض إلى ' : 'قرض من ') + action.person + (action.note ? ' — ' + action.note : ''),
-        date: TODAY,
+        date,
       };
       const entry: Debt = {
-        id: action.id, person: action.person, type: action.direction, amount: action.amount, note: action.note, date: TODAY,
+        id: action.id, person: action.person, type: action.direction, amount: action.amount, note: action.note, date,
         settled: false, paidSoFar: 0, payments: [], linkedTransactionId: tx.id,
         dueDate: action.dueDate ?? null, notificationId: action.notificationId ?? null,
       };
@@ -535,6 +546,13 @@ function reducer(state: AppState, action: Action): AppState {
         ratesUpdatedLabel: 'الآن',
       };
     }
+
+    case 'REQUEST_WEATHER_START':
+      return { ...state, weatherLoading: true, weatherDenied: false };
+    case 'APPLY_WEATHER':
+      return { ...state, weatherLoading: false, weatherDenied: false, weatherTemp: action.temp, weatherCondition: action.condition, weatherCity: action.city };
+    case 'WEATHER_DENIED':
+      return { ...state, weatherLoading: false, weatherDenied: true };
 
     case 'SET_LANG':
       return { ...state, lang: action.lang };

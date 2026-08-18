@@ -14,12 +14,13 @@ import { useTheme } from '../theme/ThemeContext';
 import { rowDir } from '../theme/rtl';
 import { RootStackParamList } from '../navigation/types';
 import { gradients } from '../theme/tokens';
+import { requestWeather } from '../utils/weather';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
 const QUICK_LINKS: { key: keyof RootStackParamList; label: string; icon: string; bg: string; fg: string; wide?: boolean }[] = [
-  { key: 'TransactionsTab' as any, label: 'العمليات', icon: 'list', bg: '#d7f5df', fg: '#1f8a4c', wide: true },
   { key: 'Income', label: 'سجل الراتب', icon: 'salary', bg: '#e3ddfb', fg: '#5b3fc4', wide: true },
+  { key: 'Transfers', label: 'التحويل', icon: 'transfer', bg: '#d7f5df', fg: '#1f8a4c', wide: true },
   { key: 'Loans', label: 'سلف مشتركة', icon: 'people', bg: '#ffe0d6', fg: '#d9542a' },
   { key: 'Tasks', label: 'المهام', icon: 'check', bg: '#cdeafc', fg: '#1f6fb0' },
   { key: 'Debts', label: 'الديون', icon: 'arrowUpRight', bg: '#ffd9df', fg: '#c23566' },
@@ -83,6 +84,13 @@ function QuickLinkGlyph({ icon, fg, bg, size = 17 }: { icon: string; fg: string;
           <Circle cx={3} cy={15} r={1.2} fill={fg} />
         </Svg>
       );
+    case 'transfer':
+      return (
+        <Svg width={size} height={size} viewBox="0 0 20 20" fill="none">
+          <Rect x={4} y={2} width={12} height={16} rx={1.5} stroke={fg} strokeWidth={1.8} />
+          <Path d="M7 7h6M7 10.5h6M7 14h3.5" stroke={fg} strokeWidth={1.8} strokeLinecap="round" />
+        </Svg>
+      );
     default:
       return <CategoryIcon icon={icon} size={size} tile={false} />;
   }
@@ -105,7 +113,6 @@ export function HomeScreen() {
   const tip = tips[tipIdx];
 
   const goQuickLink = (key: keyof RootStackParamList) => {
-    if (key === ('TransactionsTab' as any)) { navigation.navigate('Main', { screen: 'TransactionsTab' } as any); return; }
     navigation.navigate(key as any);
   };
 
@@ -125,6 +132,7 @@ export function HomeScreen() {
           </TouchableOpacity>
         </View>
 
+        <WeatherBar />
         <RatesStrip />
         <ExchangeRateWidget />
 
@@ -247,6 +255,36 @@ export function HomeScreen() {
         </View>
       </ScrollView>
     </SafeAreaView>
+  );
+}
+
+function WeatherBar() {
+  const state = useStoreState();
+  const dispatch = useDispatch();
+  const { colors } = useTheme();
+  const weatherEmoji = state.weatherCondition === 'sunny' ? '☀️' : state.weatherCondition === 'cloudy' ? '☁️' : '🌤️';
+
+  return (
+    <View
+      style={{
+        flexDirection: rowDir('ar'), alignItems: 'center', gap: 8, backgroundColor: colors.surface,
+        borderWidth: 1, borderColor: colors.divider, borderRadius: 999, paddingVertical: 8, paddingHorizontal: 14, marginBottom: 10,
+      }}
+    >
+      {state.weatherLoading ? (
+        <AppText size={12} opacity={0.5}>🌤️ جارِ تحديد الطقس...</AppText>
+      ) : state.weatherDenied ? (
+        <TouchableOpacity onPress={() => requestWeather(dispatch)}>
+          <AppText size={12} opacity={0.6}>🌤️ فعّل الموقع لعرض الطقس</AppText>
+        </TouchableOpacity>
+      ) : (
+        <>
+          <AppText size={16}>{weatherEmoji}</AppText>
+          <AppText weight="bold" size={15}>{state.weatherTemp}°</AppText>
+          <AppText size={12} opacity={0.55}>{state.weatherCity || 'موقعك'}</AppText>
+        </>
+      )}
+    </View>
   );
 }
 

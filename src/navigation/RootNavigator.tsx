@@ -16,6 +16,7 @@ import { ReferralScreen } from '../screens/ReferralScreen';
 import { SplashScreen } from '../screens/SplashScreen';
 import { TasksScreen } from '../screens/TasksScreen';
 import { TipsScreen } from '../screens/TipsScreen';
+import { TransfersScreen } from '../screens/TransfersScreen';
 import { WidgetSetupScreen } from '../screens/WidgetSetupScreen';
 import { MainTabs } from './MainTabs';
 import { RootStackParamList } from './types';
@@ -43,6 +44,7 @@ export function RootNavigator() {
       <Stack.Screen name="Referral" component={ReferralScreen} />
       <Stack.Screen name="PaymentMethods" component={PaymentMethodsScreen} />
       <Stack.Screen name="WidgetSetup" component={WidgetSetupScreen} />
+      <Stack.Screen name="Transfers" component={TransfersScreen} />
     </Stack.Navigator>
   );
 }
