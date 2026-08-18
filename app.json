@@ -36,7 +36,13 @@
       "url": "https://u.expo.dev/67025232-20d7-4292-8548-a47046f3ac39"
     },
     "plugins": [
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "يستخدم دفتر موقعك لعرض حالة الطقس بشاشتك الرئيسية."
+        }
+      ]
     ]
   }
 }
