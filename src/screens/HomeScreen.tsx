@@ -326,9 +326,26 @@ function RatesStrip() {
     }
   }, [liveRate?.parallel]);
 
+  const prevGold21Ref = useRef<number | null>(null);
+  const [liveGoldTrend, setLiveGoldTrend] = useState<'up' | 'down' | 'flat'>('flat');
+  useEffect(() => {
+    if (liveRate?.gold21k) {
+      if (prevGold21Ref.current != null && liveRate.gold21k !== prevGold21Ref.current) {
+        setLiveGoldTrend(liveRate.gold21k > prevGold21Ref.current ? 'up' : 'down');
+      }
+      prevGold21Ref.current = liveRate.gold21k;
+    }
+  }, [liveRate?.gold21k]);
+
   const usdParallel = liveRate?.parallel ?? state.usdParallel;
   const usdOfficial = liveRate?.official ?? state.usdOfficial;
   const usdTrend = liveRate ? liveTrend : state.usdTrend;
+
+  // Karat purity ratios (24k=100%, 21k=87.5%, 18k=75%) derive 24/18 from a live 21k reading.
+  const gold21 = liveRate?.gold21k ?? state.gold21;
+  const gold24 = liveRate?.gold21k ? Math.round(liveRate.gold21k * (24 / 21)) : state.gold24;
+  const gold18 = liveRate?.gold21k ? Math.round(liveRate.gold21k * (18 / 21)) : state.gold18;
+  const goldTrend = liveRate?.gold21k ? liveGoldTrend : state.goldTrend;
 
   const refresh = () => {
     dispatch({ type: 'REFRESH_RATES_START' });
@@ -348,8 +365,8 @@ function RatesStrip() {
             {usdTrend === 'up' ? <IconTrendUp /> : usdTrend === 'down' ? <IconTrendDown /> : null}
           </View>
           <View style={{ flexDirection: rowDir('ar'), alignItems: 'center', gap: 4 }}>
-            <AppText size={12} weight="bold">ذهب 21 {state.gold21.toLocaleString('en-US')}</AppText>
-            {state.goldTrend === 'up' ? <IconTrendUp /> : state.goldTrend === 'down' ? <IconTrendDown /> : null}
+            <AppText size={12} weight="bold">ذهب 21 {gold21.toLocaleString('en-US')}</AppText>
+            {goldTrend === 'up' ? <IconTrendUp /> : goldTrend === 'down' ? <IconTrendDown /> : null}
           </View>
         </View>
         <TouchableOpacity onPress={refresh}>
@@ -376,15 +393,15 @@ function RatesStrip() {
             <View style={{ flexDirection: rowDir('ar'), gap: 8 }}>
               <View style={{ flex: 1, backgroundColor: colors.bg, borderRadius: 12, padding: 10, alignItems: 'flex-end' }}>
                 <AppText size={10.5} opacity={0.55}>عيار 24</AppText>
-                <AppText size={14} weight="bold" style={{ marginTop: 2 }}>{state.gold24.toLocaleString('en-US')}</AppText>
+                <AppText size={14} weight="bold" style={{ marginTop: 2 }}>{gold24.toLocaleString('en-US')}</AppText>
               </View>
               <View style={{ flex: 1, backgroundColor: colors.bg, borderRadius: 12, padding: 10, alignItems: 'flex-end' }}>
                 <AppText size={10.5} opacity={0.55}>عيار 21</AppText>
-                <AppText size={14} weight="bold" style={{ marginTop: 2 }}>{state.gold21.toLocaleString('en-US')}</AppText>
+                <AppText size={14} weight="bold" style={{ marginTop: 2 }}>{gold21.toLocaleString('en-US')}</AppText>
               </View>
               <View style={{ flex: 1, backgroundColor: colors.bg, borderRadius: 12, padding: 10, alignItems: 'flex-end' }}>
                 <AppText size={10.5} opacity={0.55}>عيار 18</AppText>
-                <AppText size={14} weight="bold" style={{ marginTop: 2 }}>{state.gold18.toLocaleString('en-US')}</AppText>
+                <AppText size={14} weight="bold" style={{ marginTop: 2 }}>{gold18.toLocaleString('en-US')}</AppText>
               </View>
             </View>
           </View>
