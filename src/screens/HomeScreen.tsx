@@ -356,7 +356,7 @@ function RatesStrip() {
     <TouchableOpacity
       activeOpacity={0.85}
       onPress={() => dispatch({ type: 'SET_RATES_EXPANDED', value: !state.ratesExpanded })}
-      style={{ backgroundColor: colors.surface, borderRadius: 999, paddingVertical: 10, paddingHorizontal: 16 }}
+      style={{ backgroundColor: colors.surface, borderRadius: radius.card, paddingVertical: 10, paddingHorizontal: 16 }}
     >
       <View style={{ flexDirection: rowDir('ar'), alignItems: 'center', justifyContent: 'space-between' }}>
         <View style={{ flexDirection: rowDir('ar'), alignItems: 'center', gap: 14 }}>
