@@ -9,7 +9,7 @@ import {
 } from './seed';
 import {
   AppState, Category, Currency, Debt, DebtDirection, InstallmentPlan, LoanFrequency, LoanParticipant, PayMethod,
-  SavingsGoal, SharedLoan, Task, TaskPriority, Transaction, TxType, UpfrontExpense,
+  SavingsGoal, SharedLoan, Task, TaskPriority, Transaction, TxType, UpfrontExpense, WeatherCondition,
 } from './types';
 import { monthlyPeriods } from './helpers';
 
@@ -63,7 +63,11 @@ function createInitialState(): AppState {
     weatherLoading: true,
     weatherDenied: false,
     weatherTemp: null,
+    weatherFeelsLike: null,
+    weatherHumidity: null,
+    weatherWind: null,
     weatherCondition: 'sunny',
+    weatherDescLabel: '',
     weatherCity: '',
 
     ratesExpanded: false,
@@ -171,7 +175,7 @@ type Action =
   | { type: 'REFRESH_RATES_APPLY' }
 
   | { type: 'REQUEST_WEATHER_START' }
-  | { type: 'APPLY_WEATHER'; temp: number; condition: 'sunny' | 'cloudy' | 'other'; city: string }
+  | { type: 'APPLY_WEATHER'; temp: number; feelsLike: number; humidity: number; wind: number; condition: WeatherCondition; descLabel: string; city: string }
   | { type: 'WEATHER_DENIED' }
 
   | { type: 'SET_LANG'; lang: 'ar' | 'en' }
@@ -550,7 +554,10 @@ function reducer(state: AppState, action: Action): AppState {
     case 'REQUEST_WEATHER_START':
       return { ...state, weatherLoading: true, weatherDenied: false };
     case 'APPLY_WEATHER':
-      return { ...state, weatherLoading: false, weatherDenied: false, weatherTemp: action.temp, weatherCondition: action.condition, weatherCity: action.city };
+      return {
+        ...state, weatherLoading: false, weatherDenied: false, weatherTemp: action.temp, weatherFeelsLike: action.feelsLike,
+        weatherHumidity: action.humidity, weatherWind: action.wind, weatherCondition: action.condition, weatherDescLabel: action.descLabel, weatherCity: action.city,
+      };
     case 'WEATHER_DENIED':
       return { ...state, weatherLoading: false, weatherDenied: true };
 

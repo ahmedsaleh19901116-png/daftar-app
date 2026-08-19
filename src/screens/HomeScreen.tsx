@@ -1,15 +1,16 @@
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ScrollView, TouchableOpacity, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
-import { AppText, CategoryIcon, ExchangeRateWidget, Tag } from '../components';
+import { AppText, CategoryIcon, Tag } from '../components';
 import { IconEdit, IconEye, IconEyeOff, IconGear, IconLightbulb, IconRefresh, IconTrendDown, IconTrendUp } from '../components/Icons';
 import { accountBalanceRows, combinedTips, expenseTotal, incomeTotal, recentTransactions, totalBalance, useFmt } from '../data/selectors';
 import { useDispatch, useStoreState } from '../data/store';
 import { dateWithMonth, today } from '../data/helpers';
+import { useExchangeRate } from '../hooks/useExchangeRate';
 import { useTheme } from '../theme/ThemeContext';
 import { rowDir } from '../theme/rtl';
 import { RootStackParamList } from '../navigation/types';
@@ -134,7 +135,6 @@ export function HomeScreen() {
 
         <WeatherBar />
         <RatesStrip />
-        <ExchangeRateWidget />
 
         {/* Balance hero card */}
         <LinearGradient colors={gradients.balanceHero as any} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ borderRadius: radius.hero, padding: 20, overflow: 'hidden' }}>
@@ -258,17 +258,21 @@ export function HomeScreen() {
   );
 }
 
+const WEATHER_EMOJI: Record<string, string> = {
+  sunny: '☀️', cloudy: '☁️', rainy: '🌧️', snowy: '❄️', stormy: '⛈️', foggy: '🌫️', other: '🌤️',
+};
+
 function WeatherBar() {
   const state = useStoreState();
   const dispatch = useDispatch();
   const { colors } = useTheme();
-  const weatherEmoji = state.weatherCondition === 'sunny' ? '☀️' : state.weatherCondition === 'cloudy' ? '☁️' : '🌤️';
+  const weatherEmoji = WEATHER_EMOJI[state.weatherCondition] ?? '🌤️';
 
   return (
     <View
       style={{
-        flexDirection: rowDir('ar'), alignItems: 'center', gap: 8, backgroundColor: colors.surface,
-        borderWidth: 1, borderColor: colors.divider, borderRadius: 999, paddingVertical: 8, paddingHorizontal: 14, marginBottom: 10,
+        backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.divider,
+        borderRadius: 18, paddingVertical: 10, paddingHorizontal: 14, marginBottom: 10, gap: 4,
       }}
     >
       {state.weatherLoading ? (
@@ -279,19 +283,52 @@ function WeatherBar() {
         </TouchableOpacity>
       ) : (
         <>
-          <AppText size={16}>{weatherEmoji}</AppText>
-          <AppText weight="bold" size={15}>{state.weatherTemp}°</AppText>
-          <AppText size={12} opacity={0.55}>{state.weatherCity || 'موقعك'}</AppText>
+          <View style={{ flexDirection: rowDir('ar'), alignItems: 'center', gap: 8 }}>
+            <AppText size={18}>{weatherEmoji}</AppText>
+            <AppText weight="bold" size={16}>{state.weatherTemp}°</AppText>
+            <AppText size={12} opacity={0.6}>{state.weatherDescLabel}</AppText>
+            <AppText size={12} weight="semiBold" opacity={0.7}>· {state.weatherCity || 'موقعك'}</AppText>
+          </View>
+          <View style={{ flexDirection: rowDir('ar'), alignItems: 'center', gap: 10 }}>
+            <AppText size={11} opacity={0.55}>يبدو كـ {state.weatherFeelsLike}°</AppText>
+            <AppText size={11} opacity={0.55}>💧 {state.weatherHumidity}%</AppText>
+            <AppText size={11} opacity={0.55}>💨 {state.weatherWind} كم/س</AppText>
+          </View>
         </>
       )}
     </View>
   );
 }
 
+function timeAgoLabel(ms: number): string {
+  const diffMin = Math.floor((Date.now() - ms) / 60000);
+  if (diffMin < 1) return 'الآن';
+  if (diffMin < 60) return 'قبل ' + diffMin + ' دقيقة';
+  const diffHr = Math.floor(diffMin / 60);
+  if (diffHr < 24) return 'قبل ' + diffHr + ' ساعة';
+  return dateWithMonth(new Date(ms).toISOString().slice(0, 10));
+}
+
 function RatesStrip() {
   const state = useStoreState();
   const dispatch = useDispatch();
   const { colors, radius } = useTheme();
+  const { data: liveRate, isStale } = useExchangeRate();
+
+  const prevParallelRef = useRef<number | null>(null);
+  const [liveTrend, setLiveTrend] = useState<'up' | 'down' | 'flat'>('flat');
+  useEffect(() => {
+    if (liveRate) {
+      if (prevParallelRef.current != null && liveRate.parallel !== prevParallelRef.current) {
+        setLiveTrend(liveRate.parallel > prevParallelRef.current ? 'up' : 'down');
+      }
+      prevParallelRef.current = liveRate.parallel;
+    }
+  }, [liveRate?.parallel]);
+
+  const usdParallel = liveRate?.parallel ?? state.usdParallel;
+  const usdOfficial = liveRate?.official ?? state.usdOfficial;
+  const usdTrend = liveRate ? liveTrend : state.usdTrend;
 
   const refresh = () => {
     dispatch({ type: 'REFRESH_RATES_START' });
@@ -307,8 +344,8 @@ function RatesStrip() {
       <View style={{ flexDirection: rowDir('ar'), alignItems: 'center', justifyContent: 'space-between' }}>
         <View style={{ flexDirection: rowDir('ar'), alignItems: 'center', gap: 14 }}>
           <View style={{ flexDirection: rowDir('ar'), alignItems: 'center', gap: 4 }}>
-            <AppText size={12} weight="bold">$ {state.usdParallel.toLocaleString('en-US')}</AppText>
-            {state.usdTrend === 'up' ? <IconTrendUp /> : state.usdTrend === 'down' ? <IconTrendDown /> : null}
+            <AppText size={12} weight="bold">$ {usdParallel.toLocaleString('en-US')}</AppText>
+            {usdTrend === 'up' ? <IconTrendUp /> : usdTrend === 'down' ? <IconTrendDown /> : null}
           </View>
           <View style={{ flexDirection: rowDir('ar'), alignItems: 'center', gap: 4 }}>
             <AppText size={12} weight="bold">ذهب 21 {state.gold21.toLocaleString('en-US')}</AppText>
@@ -326,11 +363,11 @@ function RatesStrip() {
             <View style={{ flexDirection: rowDir('ar'), gap: 8 }}>
               <View style={{ flex: 1, backgroundColor: colors.bg, borderRadius: 12, padding: 10, alignItems: 'flex-end' }}>
                 <AppText size={10.5} opacity={0.55}>موازي</AppText>
-                <AppText size={15} weight="bold" style={{ marginTop: 2 }}>{state.usdParallel.toLocaleString('en-US')}</AppText>
+                <AppText size={15} weight="bold" style={{ marginTop: 2 }}>{usdParallel.toLocaleString('en-US')}</AppText>
               </View>
               <View style={{ flex: 1, backgroundColor: colors.bg, borderRadius: 12, padding: 10, alignItems: 'flex-end' }}>
                 <AppText size={10.5} opacity={0.55}>رسمي</AppText>
-                <AppText size={15} weight="bold" style={{ marginTop: 2 }}>{state.usdOfficial.toLocaleString('en-US')}</AppText>
+                <AppText size={15} weight="bold" style={{ marginTop: 2 }}>{usdOfficial.toLocaleString('en-US')}</AppText>
               </View>
             </View>
           </View>
@@ -351,9 +388,17 @@ function RatesStrip() {
               </View>
             </View>
           </View>
-          <AppText size={10.5} opacity={0.5} style={{ textAlign: 'right' }}>
-            {state.ratesOffline ? 'آخر تحديث: أمس' : 'آخر تحديث: ' + state.ratesUpdatedLabel}
-          </AppText>
+          {liveRate ? (
+            isStale ? (
+              <AppText size={10.5} color="#c98a1f" style={{ textAlign: 'right' }}>⚠ آخر تحديث أقدم من يوم</AppText>
+            ) : (
+              <AppText size={10.5} opacity={0.5} style={{ textAlign: 'right' }}>آخر تحديث: {timeAgoLabel(liveRate.updatedAt)}</AppText>
+            )
+          ) : (
+            <AppText size={10.5} opacity={0.5} style={{ textAlign: 'right' }}>
+              {state.ratesOffline ? 'آخر تحديث: أمس' : 'آخر تحديث: ' + state.ratesUpdatedLabel}
+            </AppText>
+          )}
         </View>
       ) : null}
     </TouchableOpacity>

@@ -51,6 +51,8 @@ export interface Debt {
   notificationId?: string | null;
 }
 
+export type WeatherCondition = 'sunny' | 'cloudy' | 'rainy' | 'snowy' | 'stormy' | 'foggy' | 'other';
+
 export type TaskPriority = 'low' | 'medium' | 'high';
 export type TaskSource = 'commitment' | 'installment' | 'debt' | 'goal' | 'debt_collect';
 
@@ -222,7 +224,11 @@ export interface AppState {
   weatherLoading: boolean;
   weatherDenied: boolean;
   weatherTemp: number | null;
-  weatherCondition: 'sunny' | 'cloudy' | 'other';
+  weatherFeelsLike: number | null;
+  weatherHumidity: number | null;
+  weatherWind: number | null;
+  weatherCondition: WeatherCondition;
+  weatherDescLabel: string;
   weatherCity: string;
 
   ratesExpanded: boolean;
