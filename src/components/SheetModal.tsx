@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { Modal, Pressable, View } from 'react-native';
+import { Modal, Pressable, useWindowDimensions, View } from 'react-native';
 import { useTheme } from '../theme/ThemeContext';
 
 interface Props {
@@ -30,10 +30,24 @@ function useDismissGuard(visible: boolean, onClose: () => void) {
   };
 }
 
+/**
+ * Percentage heights (e.g. "88%") only resolve if the parent has a definite measured height --
+ * inside a transparent Modal on Android that isn't always reliable, and an unresolved percentage
+ * can collapse the sheet to zero height (dim backdrop shows, card never appears). Resolving to a
+ * concrete pixel value against the actual window height sidesteps that ambiguity entirely.
+ */
+function useResolvedMaxHeight(maxHeight: string | number) {
+  const { height: windowHeight } = useWindowDimensions();
+  if (typeof maxHeight === 'number') return maxHeight;
+  const pct = parseFloat(maxHeight);
+  return Number.isFinite(pct) ? windowHeight * (pct / 100) : undefined;
+}
+
 /** Bottom sheet: slides up from the bottom, rounded top corners (28px), tap backdrop to close. */
 export function SheetModal({ visible, onClose, children, maxHeight = '88%' }: Props) {
   const { colors, radius } = useTheme();
   const guardedClose = useDismissGuard(visible, onClose);
+  const resolvedMaxHeight = useResolvedMaxHeight(maxHeight);
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={guardedClose}>
       <Pressable style={{ flex: 1, backgroundColor: 'rgba(20,20,43,0.45)', justifyContent: 'flex-end' }} onPress={guardedClose}>
@@ -41,7 +55,7 @@ export function SheetModal({ visible, onClose, children, maxHeight = '88%' }: Pr
           onPress={(e) => e.stopPropagation()}
           style={{
             backgroundColor: colors.bg, borderTopLeftRadius: radius.lg, borderTopRightRadius: radius.lg,
-            paddingTop: 10, maxHeight: maxHeight as any,
+            paddingTop: 10, maxHeight: resolvedMaxHeight,
           }}
         >
           <View style={{ alignItems: 'center', paddingBottom: 8 }}>
