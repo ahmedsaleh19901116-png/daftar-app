@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
 import { Modal, Pressable, useWindowDimensions, View } from 'react-native';
+import { ErrorBoundary } from './ErrorBoundary';
 import { useTheme } from '../theme/ThemeContext';
 
 interface Props {
@@ -34,35 +35,43 @@ function useDismissGuard(visible: boolean, onClose: () => void) {
  * Percentage heights (e.g. "88%") only resolve if the parent has a definite measured height --
  * inside a transparent Modal on Android that isn't always reliable, and an unresolved percentage
  * can collapse the sheet to zero height (dim backdrop shows, card never appears). Resolving to a
- * concrete pixel value against the actual window height sidesteps that ambiguity entirely.
+ * concrete pixel value against the actual window height sidesteps that ambiguity -- and since a
+ * window-dimension read can itself come back 0/stale on the very first frame a Modal mounts, a
+ * sane floor guarantees the sheet is never zero-height even if that happens.
  */
-function useResolvedMaxHeight(maxHeight: string | number) {
-  const { height: windowHeight } = useWindowDimensions();
+function resolveMaxHeight(maxHeight: string | number, windowHeight: number): number {
   if (typeof maxHeight === 'number') return maxHeight;
   const pct = parseFloat(maxHeight);
-  return Number.isFinite(pct) ? windowHeight * (pct / 100) : undefined;
+  const resolved = Number.isFinite(pct) && windowHeight > 0 ? windowHeight * (pct / 100) : 0;
+  return resolved > 150 ? resolved : 600;
 }
 
 /** Bottom sheet: slides up from the bottom, rounded top corners (28px), tap backdrop to close. */
 export function SheetModal({ visible, onClose, children, maxHeight = '88%' }: Props) {
   const { colors, radius } = useTheme();
+  const { height: windowHeight } = useWindowDimensions();
   const guardedClose = useDismissGuard(visible, onClose);
-  const resolvedMaxHeight = useResolvedMaxHeight(maxHeight);
+  const resolvedMaxHeight = resolveMaxHeight(maxHeight, windowHeight);
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={guardedClose}>
-      <Pressable style={{ flex: 1, backgroundColor: 'rgba(20,20,43,0.45)', justifyContent: 'flex-end' }} onPress={guardedClose}>
-        <Pressable
-          onPress={(e) => e.stopPropagation()}
-          style={{
-            backgroundColor: colors.bg, borderTopLeftRadius: radius.lg, borderTopRightRadius: radius.lg,
-            paddingTop: 10, maxHeight: resolvedMaxHeight,
-          }}
-        >
-          <View style={{ alignItems: 'center', paddingBottom: 8 }}>
-            <View style={{ width: 40, height: 5, borderRadius: 3, backgroundColor: colors.neutral[300] }} />
-          </View>
-          {children}
-        </Pressable>
+      <Pressable
+        style={{ height: windowHeight || undefined, flex: windowHeight ? undefined : 1, backgroundColor: 'rgba(20,20,43,0.45)', justifyContent: 'flex-end' }}
+        onPress={guardedClose}
+      >
+        <ErrorBoundary>
+          <Pressable
+            onPress={(e) => e.stopPropagation()}
+            style={{
+              backgroundColor: colors.bg, borderTopLeftRadius: radius.lg, borderTopRightRadius: radius.lg,
+              paddingTop: 10, maxHeight: resolvedMaxHeight,
+            }}
+          >
+            <View style={{ alignItems: 'center', paddingBottom: 8 }}>
+              <View style={{ width: 40, height: 5, borderRadius: 3, backgroundColor: colors.neutral[300] }} />
+            </View>
+            {children}
+          </Pressable>
+        </ErrorBoundary>
       </Pressable>
     </Modal>
   );
@@ -81,9 +90,11 @@ export function CenterModal({ visible, onClose, children }: CenterProps) {
   return (
     <Modal visible={visible} animationType="fade" transparent onRequestClose={guardedClose}>
       <Pressable style={{ flex: 1, backgroundColor: 'rgba(20,20,43,0.55)', alignItems: 'center', justifyContent: 'center', padding: 24 }} onPress={guardedClose}>
-        <Pressable onPress={(e) => e.stopPropagation()} style={{ backgroundColor: colors.surface, borderRadius: radius.card, padding: 24, width: '100%', maxWidth: 340 }}>
-          {children}
-        </Pressable>
+        <ErrorBoundary>
+          <Pressable onPress={(e) => e.stopPropagation()} style={{ backgroundColor: colors.surface, borderRadius: radius.card, padding: 24, width: '100%', maxWidth: 340 }}>
+            {children}
+          </Pressable>
+        </ErrorBoundary>
       </Pressable>
     </Modal>
   );
