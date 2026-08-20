@@ -10,23 +10,45 @@ interface Props {
   maxHeight?: string | number;
 }
 
+const DISMISS_GUARD_MS = 1000;
+
 /**
- * Guards a modal's dismiss handler against the Android race where the tail end of the same touch
- * that opened the modal (e.g. a FAB's onPress) gets redelivered to the freshly-mounted backdrop,
- * closing it instantly. The "opened at" timestamp is set synchronously during render (not in an
- * effect, which commits after paint and can run too late to catch a redelivery on the first frame).
+ * Guards the backdrop against the Android race where the SAME physical touch that opened the
+ * sheet (finger down on a FAB, held briefly, then lifted) gets its "up" event redelivered to the
+ * freshly-mounted backdrop once it appears underneath the finger, reading as an instant dismiss.
+ * Screen-recording evidence on this app showed the dismiss landing 300-650ms after open -- close
+ * enough to a normal tap's down-to-up duration to confirm this is the same gesture, not a new one.
+ *
+ * Two layers, not one: `interactive` drives pointerEvents on the backdrop so it structurally can't
+ * receive ANY touch during the window (not just filter one in a callback -- avoids any additional
+ * race between when React commits this state and when the native touch responder is wired up),
+ * and `guardedClose` is a belt-and-suspenders timestamp check for callers that don't use it.
  */
 function useDismissGuard(visible: boolean, onClose: () => void) {
   const openedAtRef = useRef(0);
   const prevVisibleRef = useRef(false);
+  const [interactive, setInteractive] = useState(false);
+
   if (visible && !prevVisibleRef.current) {
     openedAtRef.current = Date.now();
   }
   prevVisibleRef.current = visible;
-  return () => {
-    if (Date.now() - openedAtRef.current < 400) return;
+
+  useEffect(() => {
+    if (!visible) {
+      setInteractive(false);
+      return;
+    }
+    const t = setTimeout(() => setInteractive(true), DISMISS_GUARD_MS);
+    return () => clearTimeout(t);
+  }, [visible]);
+
+  const guardedClose = () => {
+    if (Date.now() - openedAtRef.current < DISMISS_GUARD_MS) return;
     onClose();
   };
+
+  return { interactive, guardedClose };
 }
 
 /** Not backed by native <Modal> any more, so the Android hardware/gesture back action needs its own handler. */
@@ -79,7 +101,7 @@ function useSlideIn(visible: boolean) {
 export function SheetModal({ visible, onClose, children, maxHeight = '88%' }: Props) {
   const { colors, radius } = useTheme();
   const { height: windowHeight } = useWindowDimensions();
-  const guardedClose = useDismissGuard(visible, onClose);
+  const { interactive, guardedClose } = useDismissGuard(visible, onClose);
   const resolvedMaxHeight = resolveMaxHeight(maxHeight, windowHeight);
   const { mounted, translateY } = useSlideIn(visible);
   useBackHandler(visible, guardedClose);
@@ -88,7 +110,11 @@ export function SheetModal({ visible, onClose, children, maxHeight = '88%' }: Pr
 
   return (
     <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
-      <Pressable style={{ flex: 1, backgroundColor: 'rgba(20,20,43,0.45)', justifyContent: 'flex-end' }} onPress={guardedClose}>
+      <Pressable
+        style={{ flex: 1, backgroundColor: 'rgba(20,20,43,0.45)', justifyContent: 'flex-end' }}
+        onPress={guardedClose}
+        pointerEvents={interactive ? 'auto' : 'box-none'}
+      >
         <Animated.View
           style={{
             maxHeight: resolvedMaxHeight,
@@ -123,7 +149,7 @@ interface CenterProps {
 /** Centered modal dialog, e.g. the payout-order lottery. Same absolute-overlay approach as SheetModal. */
 export function CenterModal({ visible, onClose, children }: CenterProps) {
   const { colors, radius } = useTheme();
-  const guardedClose = useDismissGuard(visible, onClose);
+  const { interactive, guardedClose } = useDismissGuard(visible, onClose);
   useBackHandler(visible, guardedClose);
   const opacity = useRef(new Animated.Value(0)).current;
   const [mounted, setMounted] = useState(visible);
@@ -144,7 +170,11 @@ export function CenterModal({ visible, onClose, children }: CenterProps) {
   return (
     <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
       <Animated.View style={{ flex: 1, opacity }}>
-        <Pressable style={{ flex: 1, backgroundColor: 'rgba(20,20,43,0.55)', alignItems: 'center', justifyContent: 'center', padding: 24 }} onPress={guardedClose}>
+        <Pressable
+          style={{ flex: 1, backgroundColor: 'rgba(20,20,43,0.55)', alignItems: 'center', justifyContent: 'center', padding: 24 }}
+          onPress={guardedClose}
+          pointerEvents={interactive ? 'auto' : 'box-none'}
+        >
           <ErrorBoundary>
             <Pressable onPress={(e) => e.stopPropagation()} style={{ backgroundColor: colors.surface, borderRadius: radius.card, padding: 24, width: '100%', maxWidth: 340 }}>
               {children}
