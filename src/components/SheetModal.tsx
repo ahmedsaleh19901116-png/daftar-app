@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { BackHandler, Pressable, useWindowDimensions, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ErrorBoundary } from './ErrorBoundary';
 import { useTheme } from '../theme/ThemeContext';
 
@@ -67,17 +68,19 @@ function resolveMaxHeight(maxHeight: string | number, windowHeight: number): num
 }
 
 /**
- * Bottom sheet: rounded top corners (28px), tap backdrop to close. Deliberately has NO animation
- * (no Animated.Value, no interpolate, no native driver) -- a screen recording showed the card
- * never becoming visible at all on device even after removing native <Modal> and hardening the
- * dismiss guard, with every other variable already ruled out (no crash reaches the error boundary
- * below). This strips the one remaining unknown (the slide transform) to get a plain, always-
- * fully-rendered-when-mounted baseline working first; a nicer open animation can come back once
- * that's confirmed solid.
+ * Bottom sheet: rounded top corners (28px), tap backdrop to close. The user pinned the actual bug
+ * precisely: the card was rendering below the visible screen, underneath Android's system
+ * navigation bar. Every other screen in this app only pads its own top safe-area edge and relies
+ * on TabBar to handle the bottom inset itself (since normally that's the only thing near the
+ * bottom edge) -- this overlay covers the full screen with nothing else to do that job, so it has
+ * to account for the bottom inset explicitly or the card sits behind the nav bar, off-screen.
+ * Deliberately has no animation for now (no Animated.Value/interpolate/native driver) -- that was
+ * ruled out as a separate, unrelated concern while chasing this.
  */
 export function SheetModal({ visible, onClose, children, maxHeight = '88%' }: Props) {
   const { colors, radius } = useTheme();
   const { height: windowHeight } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
   const { interactive, guardedClose } = useDismissGuard(visible, onClose);
   const resolvedMaxHeight = resolveMaxHeight(maxHeight, windowHeight);
   useBackHandler(visible, guardedClose);
@@ -87,7 +90,7 @@ export function SheetModal({ visible, onClose, children, maxHeight = '88%' }: Pr
   return (
     <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
       <Pressable
-        style={{ flex: 1, backgroundColor: 'rgba(20,20,43,0.45)', justifyContent: 'flex-end' }}
+        style={{ flex: 1, backgroundColor: 'rgba(20,20,43,0.45)', justifyContent: 'flex-end', paddingBottom: insets.bottom }}
         onPress={guardedClose}
         pointerEvents={interactive ? 'auto' : 'box-none'}
       >
