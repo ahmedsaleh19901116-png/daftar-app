@@ -11,7 +11,7 @@
     },
     "android": {
       "package": "com.ahmedsaleh90.daftar",
-      "versionCode": 15,
+      "versionCode": 16,
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",
