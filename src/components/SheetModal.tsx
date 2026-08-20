@@ -68,14 +68,21 @@ function resolveMaxHeight(maxHeight: string | number, windowHeight: number): num
 }
 
 /**
- * Bottom sheet: rounded top corners (28px), tap backdrop to close. The user pinned the actual bug
- * precisely: the card was rendering below the visible screen, underneath Android's system
- * navigation bar. Every other screen in this app only pads its own top safe-area edge and relies
- * on TabBar to handle the bottom inset itself (since normally that's the only thing near the
- * bottom edge) -- this overlay covers the full screen with nothing else to do that job, so it has
- * to account for the bottom inset explicitly or the card sits behind the nav bar, off-screen.
- * Deliberately has no animation for now (no Animated.Value/interpolate/native driver) -- that was
- * ruled out as a separate, unrelated concern while chasing this.
+ * Bottom sheet: rounded top corners (28px), tap backdrop to close. A diagnostic build with an
+ * unrelated, dead-simple red box (state-driven, no sizing logic at all) proved this overlay
+ * mechanism itself renders fine -- so the remaining bug had to be inside the card's own sizing.
+ * Confirmed from that screenshot: only the card's drag-handle sliver was visible, pinned at the
+ * very bottom -- the card WAS rendering, just collapsed to near-zero height. The cause is a classic
+ * RN sizing deadlock: the card wrapper only had `maxHeight` (a cap, not a real size), and the
+ * sheet content's <ScrollView style={{flex:1}}> needs a genuinely definite ancestor height to
+ * resolve "fill available space" against -- under the old native <Modal> that height came for
+ * free from Modal's own layout; this custom overlay never provided one, so the whole chain
+ * resolved to content-based sizing with nothing to anchor it, collapsing to ~0.
+ *
+ * Fix: give the wrapper a real `height` (not maxHeight) and `flex: 1` on the inner Pressable, so
+ * every descendant down to the ScrollView has a definite height to fill. Trade-off: sheets shorter
+ * than their cap now show trailing blank space instead of shrinking to fit -- an acceptable cost
+ * to actually render at all; can be revisited once confirmed working.
  */
 export function SheetModal({ visible, onClose, children, maxHeight = '88%' }: Props) {
   const { colors, radius } = useTheme();
@@ -94,12 +101,12 @@ export function SheetModal({ visible, onClose, children, maxHeight = '88%' }: Pr
         onPress={guardedClose}
         pointerEvents={interactive ? 'auto' : 'box-none'}
       >
-        <View style={{ maxHeight: resolvedMaxHeight }}>
+        <View style={{ height: resolvedMaxHeight }}>
           <ErrorBoundary>
             <Pressable
               onPress={(e) => e.stopPropagation()}
               style={{
-                backgroundColor: colors.bg, borderTopLeftRadius: radius.lg, borderTopRightRadius: radius.lg, paddingTop: 10,
+                flex: 1, backgroundColor: colors.bg, borderTopLeftRadius: radius.lg, borderTopRightRadius: radius.lg, paddingTop: 10,
               }}
             >
               <View style={{ alignItems: 'center', paddingBottom: 8 }}>

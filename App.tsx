@@ -42,24 +42,6 @@ function LockScreen() {
   );
 }
 
-/**
- * TEMPORARY diagnostic marker -- bypasses every bit of SheetModal's sizing/inset/animation logic
- * to answer one question: does an absolutely-positioned overlay driven by state.showAdd render
- * visibly on this device at all? If this giant red box doesn't show up either, the bug isn't in
- * SheetModal's styling -- it's more fundamental (state routing, stacking, something else). If it
- * DOES show up, the bug is confirmed to be specifically in SheetModal's sizing/positioning code.
- * Remove once the real bug is found.
- */
-function DiagnosticMarker() {
-  const state = useStoreState();
-  if (!state.showAdd) return null;
-  return (
-    <View style={{ position: 'absolute', top: 80, left: 20, right: 20, height: 200, backgroundColor: 'red', zIndex: 9999, alignItems: 'center', justifyContent: 'center', borderRadius: 12 }}>
-      <AppText size={22} weight="bold" color="#ffffff">TEST-MARKER-VISIBLE</AppText>
-    </View>
-  );
-}
-
 function Shell() {
   const state = useStoreState();
   const dispatch = useDispatch();
@@ -75,7 +57,6 @@ function Shell() {
         <RootNavigator />
         <AddEditTransactionSheet />
         <QuickLogSheet />
-        <DiagnosticMarker />
         {state.appLocked ? <LockScreen /> : null}
         <StatusBar style={dark ? 'light' : 'dark'} />
       </View>
