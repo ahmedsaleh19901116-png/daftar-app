@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Never indexed -- this page only exists to be opened from a link someone was sent directly. -->
+<meta name="robots" content="noindex, nofollow">
+<title>تفاصيل الدين — دفتر</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --violet-500: #6c5ce7;
+    --violet-700: #4632b0;
+    --violet-100: #eeecfb;
+    --green-700: #1f8a4c;
+    --green-100: #d7f5df;
+    --danger: #c23566;
+    --text: #14142b;
+    --text-dim: #6b6291;
+    --bg: #f6f5fb;
+    --surface: #ffffff;
+    --divider: rgba(20, 20, 43, 0.1);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Cairo', system-ui, -apple-system, 'Segoe UI', Tahoma, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+  }
+  .card {
+    width: 100%;
+    max-width: 420px;
+    background: var(--surface);
+    border-radius: 24px;
+    padding: 28px 24px;
+    box-shadow: 0 20px 44px rgba(31, 24, 80, 0.12);
+  }
+  .logo {
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    background: var(--violet-500);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 10px;
+  }
+  .brand {
+    text-align: center;
+    font-weight: 800;
+    font-size: 17px;
+    margin-bottom: 22px;
+  }
+  .greeting {
+    font-weight: 700;
+    font-size: 19px;
+    text-align: center;
+    margin-bottom: 4px;
+  }
+  .subline {
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-bottom: 20px;
+  }
+  .amount-box {
+    border-radius: 18px;
+    padding: 18px;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+  .amount-box.owe { background: #ffe8ee; }
+  .amount-box.owed { background: var(--green-100); }
+  .amount-label { font-size: 12px; color: var(--text-dim); margin-bottom: 4px; }
+  .amount-value { font-size: 30px; font-weight: 800; }
+  .amount-value.owe { color: var(--danger); }
+  .amount-value.owed { color: var(--green-700); }
+  .meta-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12.5px;
+    color: var(--text-dim);
+    padding: 10px 0;
+    border-bottom: 1px solid var(--divider);
+  }
+  .meta-row:last-of-type { border-bottom: none; }
+  .note-box {
+    background: var(--violet-100);
+    border-radius: 14px;
+    padding: 12px 14px;
+    font-size: 13px;
+    color: var(--violet-700);
+    text-align: center;
+    margin: 14px 0;
+  }
+  .disclaimer {
+    font-size: 11px;
+    color: var(--text-dim);
+    text-align: center;
+    line-height: 1.7;
+    margin: 18px 0;
+    padding: 0 4px;
+  }
+  .cta {
+    display: block;
+    text-align: center;
+    background: var(--violet-500);
+    color: #fff;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 14px;
+    border-radius: 999px;
+    padding: 14px;
+    margin-top: 4px;
+  }
+  .cta:active { opacity: 0.85; }
+  .error-state { text-align: center; padding: 12px 4px; }
+  .error-emoji { font-size: 34px; margin-bottom: 10px; }
+  .error-title { font-weight: 700; font-size: 16px; margin-bottom: 6px; }
+  .error-body { font-size: 13px; color: var(--text-dim); line-height: 1.7; }
+  #app { display: none; }
+  #error { display: none; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">
+      <svg width="24" height="24" viewBox="0 0 20 20" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="10" cy="10" r="7"></circle>
+        <circle cx="10" cy="10" r="2.5" fill="#ffffff"></circle>
+      </svg>
+    </div>
+    <div class="brand">دفتر</div>
+
+    <div id="app">
+      <div class="greeting" id="greeting"></div>
+      <div class="subline" id="subline"></div>
+
+      <div class="amount-box" id="amountBox">
+        <div class="amount-label" id="amountLabel"></div>
+        <div class="amount-value" id="amountValue"></div>
+      </div>
+
+      <div class="meta-row">
+        <span>تاريخ الدين</span>
+        <span id="dateValue"></span>
+      </div>
+      <div class="meta-row">
+        <span>المبلغ الإجمالي</span>
+        <span id="totalValue"></span>
+      </div>
+
+      <div class="note-box" id="noteBox" style="display:none"></div>
+
+      <div class="disclaimer">
+        هذه نسخة عرض فقط وليست السجل الرسمي — السجل الرسمي يبقى محفوظًا في تطبيق الطرف الذي أرسل هذا الرابط.
+      </div>
+
+      <a class="cta" id="ctaLink" href="#" target="_blank" rel="noopener">وثّق ديونك بسهولة — حمّل دفتر</a>
+    </div>
+
+    <div class="error-state" id="error">
+      <div class="error-emoji">🔗</div>
+      <div class="error-title">هذا الرابط غير صالح</div>
+      <div class="error-body">قد يكون الرابط منتهي الصلاحية أو غير مكتمل. تواصل مع الشخص الذي أرسله لك لطلب رابط جديد.</div>
+    </div>
+  </div>
+
+  <script>
+    // Everything below runs entirely client-side against the `d` URL parameter only -- no
+    // fetch/XHR, no localStorage, nothing sent anywhere. This page is a read-only receipt, not a
+    // source of truth: it never lets the receiver edit or "confirm" anything.
+
+    var APP_DOWNLOAD_URL = 'https://play.google.com/store/apps/details?id=com.ahmedsaleh90.daftar';
+
+    var B64_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+
+    function base64DecodeToBinaryString(b64) {
+      var clean = b64.replace(/=+$/, '');
+      var out = '';
+      var bits = 0;
+      var value = 0;
+      for (var i = 0; i < clean.length; i++) {
+        var idx = B64_CHARS.indexOf(clean.charAt(i));
+        if (idx === -1) continue;
+        value = (value << 6) | idx;
+        bits += 6;
+        if (bits >= 8) {
+          bits -= 8;
+          out += String.fromCharCode((value >> bits) & 0xff);
+        }
+      }
+      return out;
+    }
+
+    function decodeUtf8Base64(b64) {
+      return decodeURIComponent(escape(base64DecodeToBinaryString(b64)));
+    }
+
+    var ARABIC_MONTHS = [
+      'كانون الثاني', 'شباط', 'آذار', 'نيسان', 'أيار', 'حزيران',
+      'تموز', 'آب', 'أيلول', 'تشرين الأول', 'تشرين الثاني', 'كانون الأول',
+    ];
+
+    function formatDate(iso) {
+      var parts = String(iso).split('-');
+      if (parts.length !== 3) return iso;
+      var y = parseInt(parts[0], 10), m = parseInt(parts[1], 10), d = parseInt(parts[2], 10);
+      if (!y || !m || !d || m < 1 || m > 12) return iso;
+      return d + ' ' + ARABIC_MONTHS[m - 1] + ' ' + y;
+    }
+
+    function formatAmount(n) {
+      return Math.round(n).toLocaleString('en-US') + ' د.ع';
+    }
+
+    function isNonEmptyString(v) { return typeof v === 'string' && v.length > 0; }
+    function isFiniteNumber(v) { return typeof v === 'number' && isFinite(v); }
+
+    function validatePayload(p) {
+      if (!p || typeof p !== 'object') return false;
+      if (!isNonEmptyString(p.person)) return false;
+      if (!isFiniteNumber(p.amount) || p.amount < 0) return false;
+      if (!isFiniteNumber(p.paidSoFar) || p.paidSoFar < 0) return false;
+      if (!isNonEmptyString(p.date)) return false;
+      if (p.type !== 'owed_to_me' && p.type !== 'i_owe') return false;
+      if (p.note !== undefined && typeof p.note !== 'string') return false;
+      return true;
+    }
+
+    function render(payload) {
+      var remaining = Math.max(0, payload.amount - payload.paidSoFar);
+      var owedToMe = payload.type === 'owed_to_me'; // sender is owed -> the person opening this link owes
+      var box = document.getElementById('amountBox');
+      var value = document.getElementById('amountValue');
+
+      document.getElementById('greeting').textContent = 'مرحبا ' + payload.person;
+      document.getElementById('subline').textContent = owedToMe
+        ? 'لديك مبلغ مسجّل عليك يستحق التسديد'
+        : 'لك مبلغ مسجّل لصالحك';
+      document.getElementById('amountLabel').textContent = owedToMe ? 'عليك تسديد' : 'مستحق لك';
+      value.textContent = formatAmount(remaining);
+      box.className = 'amount-box ' + (owedToMe ? 'owe' : 'owed');
+      value.className = 'amount-value ' + (owedToMe ? 'owe' : 'owed');
+
+      document.getElementById('dateValue').textContent = formatDate(payload.date);
+      document.getElementById('totalValue').textContent = formatAmount(payload.amount);
+
+      if (payload.note) {
+        var noteBox = document.getElementById('noteBox');
+        noteBox.textContent = payload.note;
+        noteBox.style.display = 'block';
+      }
+
+      document.getElementById('ctaLink').href = APP_DOWNLOAD_URL;
+      document.getElementById('app').style.display = 'block';
+    }
+
+    function showError() {
+      document.getElementById('error').style.display = 'block';
+    }
+
+    try {
+      var params = new URLSearchParams(window.location.search);
+      var d = params.get('d');
+      if (!d) throw new Error('missing');
+      var json = decodeUtf8Base64(d);
+      var payload = JSON.parse(json);
+      if (!validatePayload(payload)) throw new Error('invalid');
+      render(payload);
+    } catch (e) {
+      showError();
+    }
+  </script>
+</body>
+</html>
