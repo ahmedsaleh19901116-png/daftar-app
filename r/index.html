@@ -249,8 +249,8 @@
       return d + ' ' + ARABIC_MONTHS[m - 1] + ' ' + y;
     }
 
-    function formatAmount(n) {
-      return Math.round(n).toLocaleString('en-US') + ' د.ع';
+    function formatAmount(n, currency) {
+      return currency === 'USD' ? '$ ' + Math.round(n).toLocaleString('en-US') : Math.round(n).toLocaleString('en-US') + ' د.ع';
     }
 
     function isNonEmptyString(v) { return typeof v === 'string' && v.length > 0; }
@@ -264,6 +264,7 @@
       if (!isNonEmptyString(p.date)) return false;
       if (p.type !== 'owed_to_me' && p.type !== 'i_owe') return false;
       if (p.note !== undefined && typeof p.note !== 'string') return false;
+      if (p.currency !== undefined && p.currency !== 'IQD' && p.currency !== 'USD') return false;
       return true;
     }
 
@@ -278,12 +279,12 @@
         ? 'لديك مبلغ مسجّل عليك يستحق التسديد'
         : 'لك مبلغ مسجّل لصالحك';
       document.getElementById('amountLabel').textContent = owedToMe ? 'عليك تسديد' : 'مستحق لك';
-      value.textContent = formatAmount(remaining);
+      value.textContent = formatAmount(remaining, payload.currency);
       box.className = 'amount-box ' + (owedToMe ? 'owe' : 'owed');
       value.className = 'amount-value ' + (owedToMe ? 'owe' : 'owed');
 
       document.getElementById('dateValue').textContent = formatDate(payload.date);
-      document.getElementById('totalValue').textContent = formatAmount(payload.amount);
+      document.getElementById('totalValue').textContent = formatAmount(payload.amount, payload.currency);
 
       if (payload.note) {
         var noteBox = document.getElementById('noteBox');
